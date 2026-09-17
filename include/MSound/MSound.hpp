@@ -184,6 +184,11 @@ public:
 	bool checkUnkA8(u32 flag) { return !(unkA8 & flag) ? false : true; }
 
 public:
+#ifdef VERSION_GMSP01
+	// GMSP01 carries one extra word at the head of MSound's own members, so
+	// every field below sits 4 bytes lower than the GMSJ01 offsets named here.
+	u32 unkGMSP01;
+#endif
 	/* 0x98 */ MSModBgm* unk98;
 	/* 0x9C */ MSBgmXFade* unk9C;
 	/* 0xA0 */ u32 unkA0;
