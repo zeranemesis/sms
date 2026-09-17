@@ -2942,7 +2942,7 @@ JSystem/J3D/J3DGraphLoader/J3DAnmLoader.cpp:
 	.data       start:0x803D8DA8 end:0x803D8E08
 	.sdata2     start:0x8040E3F0 end:0x8040E3F8
 
-JSystem/std-list.cpp:
+JSystem/JGadget/std-list.cpp:
 	.text       start:0x802E2840 end:0x802E2AA4
 
 JSystem/JKernel/JKRDvdRipper.cpp:
@@ -3005,7 +3005,7 @@ JSystem/J3D/J3DGraphAnimator/J3DMaterialAnm.cpp:
 	.text       start:0x802E7E94 end:0x802E8174
 	.data       start:0x803D9158 end:0x803D9178
 
-JSystem/std-vector.cpp:
+JSystem/JGadget/std-vector.cpp:
 	.text       start:0x802E8174 end:0x802E8784
 	.sdata2     start:0x8040E450 end:0x8040E460
 
@@ -3675,7 +3675,7 @@ PowerPC_EABI_Support/Runtime/global_destructor_chain.c:
 	.dtors      start:0x8036B6A8 end:0x8036B6AC
 	.sbss       start:0x80405DF0 end:0x80405DF8
 
-Runtime.PPCEABI.H/NMWException.cp:
+PowerPC_EABI_Support/Runtime/NMWException.cp:
 	extab       start:0x80005540 end:0x80005588
 	extabindex  start:0x800055A0 end:0x800055DC
 	.text       start:0x8032FFA0 end:0x80330354
@@ -3684,7 +3684,7 @@ PowerPC_EABI_Support/Runtime/ptmf.c:
 	.text       start:0x80330354 end:0x803303AC
 	.rodata     start:0x803A2C58 end:0x803A2C68
 
-Runtime.PPCEABI.H/ExceptionPPC.cp:
+PowerPC_EABI_Support/Runtime/ExceptionPPC.cp:
 	.text       start:0x803303AC end:0x8033041C
 	.bss        start:0x803F7B70 end:0x803F7B80
 
