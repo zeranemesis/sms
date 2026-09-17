@@ -464,7 +464,12 @@ void TLiveActor::updateAnmSound()
 void TLiveActor::setAnmSound(const char* path)
 {
 	if (!mAnmSound)
+#ifdef VERSION_GMSP01
+		// the assert sits 14 lines further down in the GMSP01 source
+		OSPanic(__FILE__, 0x393, "TLiveActor[%s] : mAnmSound == NULL\n", mName);
+#else
 		OSPanic(__FILE__, 0x385, "TLiveActor[%s] : mAnmSound == NULL\n", mName);
+#endif
 
 	mAnmSoundPath = path;
 
