@@ -111,6 +111,7 @@ public:
 	virtual void kill();
 	virtual void moveObject();
 	virtual void initMapObj();
+	virtual void touchActor(THitActor* actor);
 
 	JGeometry::TVec3<f32>& getUnk140() { return unk140; }
 
