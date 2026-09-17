@@ -1157,6 +1157,27 @@ void TItemNozzle::appearing()
 
 void TItemNozzle::control() { TMapObjGeneral::control(); }
 
+// TODO: nonmatching. Every instruction matches; the frame is 16 bytes
+// short, i.e. four compiler temporaries the original had and this shape
+// does not produce.
+void TItemNozzle::calcRootMatrix()
+{
+	if (isState(STATE_HOLDING) && mHolder != nullptr) {
+		MtxPtr src = mHolder->getTakingMtx();
+		MtxPtr mtx = getModel()->getAnmMtx(0);
+		PSMTXCopy(src, mtx);
+
+		if (isActorType(0x20000022))
+			mtx[1][3] += 50.0f;
+		else
+			mtx[1][3] += 30.0f;
+
+		mPosition.set(mtx[0][3], mtx[1][3], mtx[2][3]);
+	} else if (!checkMapObjFlag(MAP_OBJ_FLAG_UNK8000000)) {
+		TMapObjGeneral::calcRootMatrix();
+	}
+}
+
 void TItemNozzle::initMapObj()
 {
 	TItem::initMapObj();

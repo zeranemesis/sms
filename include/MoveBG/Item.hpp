@@ -200,6 +200,7 @@ public:
 	virtual BOOL receiveMessage(THitActor* sender, u32 message);
 	virtual void control();
 	virtual void initMapObj();
+	virtual void calcRootMatrix();
 	virtual void touchPlayer(THitActor*);
 	virtual void appearing();
 	virtual void put();
