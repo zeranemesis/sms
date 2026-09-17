@@ -3014,7 +3014,8 @@ bool TGCConsole2::processAppearLife(int param_1)
 	if (param_1 == 0) {
 		unk1C4->setPanePosition(40, JUTPoint(unk1C8, unk1CA), JUTPoint(-10, 10),
 		                        JUTPoint(0, 0));
-		unk1C4->getPane()->show();
+		J2DPane* pane = unk1C4->getPane();
+		pane->show();
 		unk1C4->update();
 		isFinished = false;
 	} else if (param_1 < 100) {
