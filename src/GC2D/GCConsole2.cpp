@@ -1421,7 +1421,7 @@ static inline void updateCoinAppearState(TGCConsole2* console)
 static inline void updateMarioAppearState(TGCConsole2* console)
 {
 	if (console->unk3A && console->processAppearMario(console->unk70++)) {
-		if (console->unk3AC[1]) {
+		if (console->unk3AC[TGCConsole2::UNK3AC_FLAG]) {
 			if (console->unk70 == 0xc8) {
 				int lives = TFlagManager::smInstance->getFlag(0x20001);
 				if (lives > 99)
@@ -1432,7 +1432,7 @@ static inline void updateMarioAppearState(TGCConsole2* console)
 				console->unk3A = 0;
 			}
 		} else {
-			console->unk3AC[1] = 0;
+			console->unk3AC[TGCConsole2::UNK3AC_FLAG] = 0;
 			console->unk70     = 0;
 		}
 	}
@@ -2879,7 +2879,7 @@ void TGCConsole2::startAppearMario(bool param_1)
 	}
 
 	unk3A     = 1;
-	unk3AC[1] = param_1;
+	unk3AC[TGCConsole2::UNK3AC_FLAG] = param_1;
 	unk3B     = 0;
 	unk59     = 1;
 	unk70     = 0;
@@ -3855,7 +3855,7 @@ void TGCConsole2::perform(u32 flags, JDrama::TGraphics* graphics)
 	if (flags & 1) {
 		if (!unk50) {
 			if (gpCamera->isDemoCamera() || SMS_CheckMarioFlag(0x400)
-			    || (!unk3AC[1] && TFlagManager::smInstance->getBool(0x30002)))
+			    || (!unk3AC[TGCConsole2::UNK3AC_FLAG] && TFlagManager::smInstance->getBool(0x30002)))
 				startCameraDemo();
 		} else if (!gpCamera->isDemoCamera() && !SMS_CheckMarioFlag(0x400)) {
 			endCameraDemo();

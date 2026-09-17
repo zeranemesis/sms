@@ -246,6 +246,13 @@ public:
 #else
 	/* 0x3AC */ u8 unk3AC[0x4];
 #endif
+	// GMSP01's four extra bytes sit between the two bytes this blob actually
+	// uses, so the second one moves from index 1 to index 4.
+#ifdef VERSION_GMSP01
+	enum { UNK3AC_FLAG = 4 };
+#else
+	enum { UNK3AC_FLAG = 1 };
+#endif
 	/* 0x3B0 */ J2DWindow* unk3B0;
 	/* 0x3B4 */ J2DTextBox* unk3B4;
 	/* 0x3B8 */ J2DTextBox* unk3B8;
