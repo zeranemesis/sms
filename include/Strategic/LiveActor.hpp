@@ -17,6 +17,12 @@ class J3DModel;
 class TBinder;
 class TMapCollisionManager;
 
+#ifdef VERSION_GMSP01
+#define LIVE_FLAG_ABOVE_4000(v) ((v) << 1)
+#else
+#define LIVE_FLAG_ABOVE_4000(v) (v)
+#endif
+
 enum {
 	LIVE_FLAG_DEAD        = 0x1,
 	LIVE_FLAG_HIDDEN      = 0x2,
@@ -32,24 +38,29 @@ enum {
 	LIVE_FLAG_UNK800      = 0x800,
 	LIVE_FLAG_UNK1000     = 0x1000,
 	LIVE_FLAG_UNK2000     = 0x2000,
-	LIVE_FLAG_UNK4000     = 0x4000,
-	LIVE_FLAG_UNK8000     = 0x8000,
+	// GMSP01 inserts an extra live flag at 0x4000, so every flag from here up
+	// sits one bit higher than in GMSJ01. The names keep their GMSJ01 values
+	// so that call sites read the same across versions.
+	LIVE_FLAG_UNK4000     = LIVE_FLAG_ABOVE_4000(0x4000),
+	LIVE_FLAG_UNK8000     = LIVE_FLAG_ABOVE_4000(0x8000),
 	// WARNING: some flag values are overloaded between derived classes. E.g.
 	// LIVE_FLAG_UNK10000 means different things for NPCs and small enemies.
 	// Be careful about placing stuff here -- it might belong to derived classes
 	// instead.
-	LIVE_FLAG_UNK20000    = 0x20000,
-	LIVE_FLAG_UNK40000    = 0x40000,
-	LIVE_FLAG_UNK80000    = 0x80000,
-	LIVE_FLAG_UNK100000   = 0x100000,
-	LIVE_FLAG_UNK200000   = 0x200000,
-	LIVE_FLAG_UNK400000   = 0x400000,
-	LIVE_FLAG_UNK1000000  = 0x1000000,
-	LIVE_FLAG_UNK2000000  = 0x2000000,
-	LIVE_FLAG_UNK4000000  = 0x4000000,
-	LIVE_FLAG_UNK8000000  = 0x8000000,
-	LIVE_FLAG_UNK10000000 = 0x10000000,
+	LIVE_FLAG_UNK20000    = LIVE_FLAG_ABOVE_4000(0x20000),
+	LIVE_FLAG_UNK40000    = LIVE_FLAG_ABOVE_4000(0x40000),
+	LIVE_FLAG_UNK80000    = LIVE_FLAG_ABOVE_4000(0x80000),
+	LIVE_FLAG_UNK100000   = LIVE_FLAG_ABOVE_4000(0x100000),
+	LIVE_FLAG_UNK200000   = LIVE_FLAG_ABOVE_4000(0x200000),
+	LIVE_FLAG_UNK400000   = LIVE_FLAG_ABOVE_4000(0x400000),
+	LIVE_FLAG_UNK1000000  = LIVE_FLAG_ABOVE_4000(0x1000000),
+	LIVE_FLAG_UNK2000000  = LIVE_FLAG_ABOVE_4000(0x2000000),
+	LIVE_FLAG_UNK4000000  = LIVE_FLAG_ABOVE_4000(0x4000000),
+	LIVE_FLAG_UNK8000000  = LIVE_FLAG_ABOVE_4000(0x8000000),
+	LIVE_FLAG_UNK10000000 = LIVE_FLAG_ABOVE_4000(0x10000000),
 };
+
+#undef LIVE_FLAG_ABOVE_4000
 
 class TLiveActor : public TTakeActor {
 public:
