@@ -544,7 +544,14 @@ void TFlagManager::correctOptFlag()
 		setFlag(0xA0000, getBool(0x70001) ? 2 : 1);
 	}
 
-	setFlag(0xA0001, 0x100);
+	s32 lang = getFlag(0x80000);
+	if (lang == 0) {
+		u8 language = OSGetLanguage();
+		lang         = (language < 5) ? language : 0;
+	} else {
+		lang = lang - 1;
+	}
+	setFlag(0xA0001, lang);
 }
 
 void TFlagManager::loadOption(JSUMemoryInputStream& in)

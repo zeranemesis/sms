@@ -1,8 +1,21 @@
 #include "dolphin/os/OSRtc.h"
+#include <dolphin/os.h>
 #include <System/RenderModeObj.hpp>
 #include <dolphin/vi.h>
 #include <JSystem/JDrama/JDRRenderMode.hpp>
 #include <System/Resolution.hpp>
+
+static u32 SMSGetVideoFormat()
+{
+	u32 fmt = VIGetTvFormat();
+	if (!(OSGetConsoleType() & OS_CONSOLE_DEVELOPMENT)) {
+		fmt = VI_PAL;
+	}
+	if (OSGetEuRgb60Mode() == 1) {
+		fmt = VI_EURGB60;
+	}
+	return fmt;
+}
 
 u8 SMSAASamplePattern_non[12][2] = {
 	{ 6, 6 }, { 6, 6 }, { 6, 6 }, { 6, 6 }, { 6, 6 }, { 6, 6 },
@@ -24,14 +37,19 @@ JDrama::TRect SMSGetRederRect_Game()
 
 void SMSSetupGCLogoRenderMode(GXRenderModeObj* rmo)
 {
-	rmo->viTVmode        = (VITVMode)VI_TVMODE(VIGetTvFormat(), VI_INTERLACE);
+	u32 fmt = VIGetTvFormat();
+	if (!(OSGetConsoleType() & OS_CONSOLE_DEVELOPMENT)) {
+		fmt = VI_PAL;
+	}
+
+	rmo->viTVmode        = (VITVMode)VI_TVMODE(fmt, VI_INTERLACE);
 	rmo->fbWidth         = SMSGetGCLogoRenderWidth();
 	rmo->efbHeight       = SMSGetGCLogoRenderHeight();
 	rmo->viWidth         = SMSGetGCLogoVideoWidth();
 	rmo->xFBmode         = VI_XFBMODE_DF;
 	rmo->field_rendering = 0;
 	rmo->aa              = 0;
-	JDrama::CalcRenderModeXFBHeight(rmo, SMSGetGCLogoVideoHeight());
+	JDrama::CalcRenderModeXFBHeight(rmo, SMSGetGCLogoVideoHeight(fmt));
 	JDrama::CalcRenderModeVIXOrigin(rmo);
 	JDrama::CalcRenderModeVIYOrigin(rmo);
 	JDrama::CopyRenderModeSamplePattern(rmo, SMSAASamplePattern_non);
@@ -46,17 +64,18 @@ void SMSSetupGCLogoRenderingInfo(JDrama::TDisplay* param_1)
 
 void SMSSetupTitleRenderMode(GXRenderModeObj* rmo)
 {
-	bool noFilter = VIGetTvFormat() == 0 && OSGetProgressiveMode() == 1;
+	u32 fmt       = SMSGetVideoFormat();
+	bool noFilter = fmt == VI_NTSC && OSGetProgressiveMode() == 1;
 
 	rmo->viTVmode = (VITVMode)VI_TVMODE(
-	    VIGetTvFormat(), noFilter ? VI_PROGRESSIVE : VI_INTERLACE);
+	    fmt, noFilter ? VI_PROGRESSIVE : VI_INTERLACE);
 	rmo->fbWidth         = SMSGetTitleRenderWidth();
 	rmo->efbHeight       = SMSGetTitleRenderHeight();
 	rmo->viWidth         = SMSGetTitleVideoWidth();
 	rmo->xFBmode         = noFilter ? VI_XFBMODE_SF : VI_XFBMODE_DF;
 	rmo->field_rendering = 0;
 	rmo->aa              = 0;
-	JDrama::CalcRenderModeXFBHeight(rmo, SMSGetTitleVideoHeight());
+	JDrama::CalcRenderModeXFBHeight(rmo, SMSGetTitleVideoHeight(fmt));
 	JDrama::CalcRenderModeVIXOrigin(rmo);
 	JDrama::CalcRenderModeVIYOrigin(rmo);
 	JDrama::CopyRenderModeSamplePattern(rmo, SMSAASamplePattern_non);
@@ -74,10 +93,11 @@ void SMSSetupGameRenderingInfo(JDrama::TDisplay* param_1, bool param_2)
 {
 	GXRenderModeObj& rmo = param_1->getRenderMode();
 
-	bool noFilter = VIGetTvFormat() == 0 && OSGetProgressiveMode() == 1;
+	u32 fmt       = SMSGetVideoFormat();
+	bool noFilter = fmt == VI_NTSC && OSGetProgressiveMode() == 1;
 
 	rmo.viTVmode = (VITVMode)VI_TVMODE(
-	    VIGetTvFormat(), noFilter ? VI_PROGRESSIVE : VI_INTERLACE);
+	    fmt, noFilter ? VI_PROGRESSIVE : VI_INTERLACE);
 
 	param_1->onFlag(0x8);
 	if (param_2) {
@@ -91,7 +111,7 @@ void SMSSetupGameRenderingInfo(JDrama::TDisplay* param_1, bool param_2)
 	rmo.efbHeight = SMSGetGameRenderHeight();
 	rmo.viWidth   = SMSGetGameVideoWidth();
 
-	JDrama::CalcRenderModeXFBHeight(&rmo, SMSGetGameVideoHeight());
+	JDrama::CalcRenderModeXFBHeight(&rmo, SMSGetGameVideoHeight(fmt));
 	JDrama::CalcRenderModeVIXOrigin(&rmo);
 	JDrama::CalcRenderModeVIYOrigin(&rmo);
 	if (param_2 || noFilter) {
@@ -108,17 +128,18 @@ void SMSSetupMovieRenderingInfo(JDrama::TDisplay* param_1)
 {
 	GXRenderModeObj& rmo = param_1->getRenderMode();
 
-	bool noFilter = VIGetTvFormat() == 0 && OSGetProgressiveMode() == 1;
+	u32 fmt       = SMSGetVideoFormat();
+	bool noFilter = fmt == VI_NTSC && OSGetProgressiveMode() == 1;
 
 	rmo.viTVmode = (VITVMode)VI_TVMODE(
-	    VIGetTvFormat(), noFilter ? VI_PROGRESSIVE : VI_INTERLACE);
+	    fmt, noFilter ? VI_PROGRESSIVE : VI_INTERLACE);
 	rmo.fbWidth         = SMSGetGameRenderWidth();
 	rmo.efbHeight       = SMSGetGameRenderHeight();
 	rmo.viWidth         = SMSGetGameVideoWidth();
 	rmo.xFBmode         = noFilter ? VI_XFBMODE_SF : VI_XFBMODE_DF;
 	rmo.field_rendering = 0;
 	rmo.aa              = 0;
-	JDrama::CalcRenderModeXFBHeight(&rmo, SMSGetGameVideoHeight());
+	JDrama::CalcRenderModeXFBHeight(&rmo, SMSGetGameVideoHeight(fmt));
 	JDrama::CalcRenderModeVIXOrigin(&rmo);
 	JDrama::CalcRenderModeVIYOrigin(&rmo);
 	JDrama::CopyRenderModeSamplePattern(&rmo, SMSAASamplePattern_non);

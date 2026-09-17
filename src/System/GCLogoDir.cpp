@@ -128,10 +128,17 @@ TGCLogoDir::~TGCLogoDir()
 	mGamePad->offFlag(TMarioGamePad::PAD_FLAG_MENU_INPUT);
 }
 
+// TODO: GMSP01 asm for this function (inlined into direct_nlogo at both call
+// sites) is structurally different from this JP-derived reconstruction: it
+// branches on VIGetTvFormat() == VI_PAL and calls OSGetEuRgb60Mode() to
+// short-circuit selection before falling into the same B-hold timer logic.
+// This is a best-effort approximation (enough to link), not a verified match.
 static inline bool checkProgressiveSelect(TGCLogoDir* director)
 {
 	bool selected = false;
-	if (director->mProgSelect->unkC.check(0xffff) && VIGetTvFormat() == 0
+	if (director->mProgSelect->unkC.check(0xffff)
+	    && (VIGetTvFormat() == 0
+	        || (VIGetTvFormat() == VI_PAL && OSGetEuRgb60Mode() == 1))
 	    && VIGetDTVStatus() == 1) {
 		if (OSGetProgressiveMode() == 1) {
 			director->mProgSelect->unkC = 0;

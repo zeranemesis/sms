@@ -71,7 +71,11 @@ void TProgSelect::perform(u32 cue, JDrama::TGraphics* graphics)
 					         "プログレッシブモード"
 					         "FX[20]FY[20]CC[ffffff]に\n"
 					         "セットされました。");
-					OSSetProgressiveMode(1);
+					// TODO: GMSP01 asm calls OSSetEuRgb60Mode(1) here instead
+					// of OSSetProgressiveMode(1), and fetches its string via
+					// SMSGetMessageData rather than a literal -- needs
+					// proper re-decompilation for this version.
+					OSSetEuRgb60Mode(1);
 				} else {
 					snprintf(unk1C, 256,
 					         "GM[0]画面表示モードは\n"
@@ -79,7 +83,7 @@ void TProgSelect::perform(u32 cue, JDrama::TGraphics* graphics)
 					         "インターレースモード"
 					         "FX[20]FY[20]CC[ffffff]に\n"
 					         "セットされました。");
-					OSSetProgressiveMode(0);
+					OSSetEuRgb60Mode(0);
 				}
 				mHideTextBoxes = true;
 			}
