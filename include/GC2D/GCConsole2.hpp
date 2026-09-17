@@ -240,7 +240,12 @@ public:
 	/* 0x398 */ TBoundPane* unk398;
 	/* 0x39C */ TBoundPane* unk39C[3];
 	/* 0x3A8 */ TExPane* unk3A8;
+#ifdef VERSION_GMSP01
+	// GMSP01 has four more bytes here, shifting every field below it by 4.
+	/* 0x3AC */ u8 unk3AC[0x8];
+#else
 	/* 0x3AC */ u8 unk3AC[0x4];
+#endif
 	/* 0x3B0 */ J2DWindow* unk3B0;
 	/* 0x3B4 */ J2DTextBox* unk3B4;
 	/* 0x3B8 */ J2DTextBox* unk3B8;
