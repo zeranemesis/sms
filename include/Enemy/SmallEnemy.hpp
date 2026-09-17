@@ -201,7 +201,7 @@ public:
 	}
 
 	enum {
-		LIVE_FLAG_MELT_ON_DEATH = 0x10000,
+		LIVE_FLAG_MELT_ON_DEATH = LIVE_FLAG_ABOVE_4000(0x10000),
 	};
 
 public:

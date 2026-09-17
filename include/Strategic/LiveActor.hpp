@@ -60,8 +60,6 @@ enum {
 	LIVE_FLAG_UNK10000000 = LIVE_FLAG_ABOVE_4000(0x10000000),
 };
 
-#undef LIVE_FLAG_ABOVE_4000
-
 class TLiveActor : public TTakeActor {
 public:
 	TLiveActor(const char* name = "活動オブジェクト基底型");
