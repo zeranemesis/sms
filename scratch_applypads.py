@@ -1,51 +1,89 @@
 import json, re, os
 
-pads = json.load(open('scratch_pads.json'))
-todo = []
-for d, lst in pads.items():
-    d = int(d)
-    if d >= 0:
-        continue  # target frame smaller: padding can't help
-    for unit, fn in lst:
-        todo.append((unit, fn, -d))  # bytes to add
-print(f"negative-delta pads (bytes to add): {len(todo)}")
+names = json.load(open('scratch_names.json'))
+todo = [(u, f, n, nm) for u, f, n, nm in names if nm and not str(nm).startswith('ERR')]
+print(f"functions: {len(todo)}")
 
 def srcpath(unit):
-    rel = unit.split('/', 1)[1]
-    return os.path.join('src', rel + '.cpp')
+    return os.path.join('src', unit.split('/', 1)[1] + '.cpp')
 
-# group by file
+def parse_name(nm):
+    # "Cls::base(args) const" or "base(args)"
+    mm = re.match(r'^((?:[\w:]+::)?)(\w+?)\s*\((.*)\)\s*(const)?$', nm)
+    if not mm:
+        return None, None, None
+    cls, base, args, const = mm.groups()
+    # count top-level args
+    depth, n, i = 0, 0, 0
+    for ch in args:
+        if ch in '([<':
+            depth += 1
+        elif ch in ')]>':
+            depth -= 1
+        elif ch == ',' and depth == 0:
+            n += 1
+    n += 1 if args.strip() else 0
+    return (cls[:-2] if cls else None), base, n
+
+def count_src_args(argstr):
+    depth, n = 0, 0
+    for ch in argstr:
+        if ch in '([<':
+            depth += 1
+        elif ch in ')]>':
+            depth -= 1
+        elif ch == ',' and depth == 0:
+            n += 1
+    return n + 1 if argstr.strip() else 0
+
 byfile = {}
-for unit, fn, n in todo:
-    byfile.setdefault(srcpath(unit), []).append((unit, fn, n))
+for unit, fn, n, nm in todo:
+    byfile.setdefault(srcpath(unit), []).append((unit, fn, n, nm))
 
 applied, skipped = [], []
 for p, items in byfile.items():
     if not os.path.exists(p):
-        skipped.extend((u, f, 'no file') for u, f, _ in items)
+        skipped.extend((u, f, 'no file') for u, f, _, _ in items)
         continue
     text = open(p, encoding='utf-8', errors='replace').read()
-    ok = True
-    for unit, fn, n in items:
-        base = fn.split('__')[0]
-        pat = re.compile(r'(\b[\w:<>~ ]*?\b' + re.escape(base) + r'\s*\([^;{]*\)\s*(?:const\s*)?)\{')
-        ms = [m for m in pat.finditer(text) if not re.search(r';\s*$', m.group(1))]
-        if not ms:
-            skipped.append((unit, fn, 'no def'))
-            ok = False
+    for unit, fn, n, nm in items:
+        cls, base, nargs = parse_name(nm)
+        if base is None:
+            skipped.append((unit, fn, f'bad name: {nm}'))
             continue
-        m = ms[0]
+        name = re.sub(r'[^A-Za-z0-9_]', '', f"framePad_{n}_{base}")
+        if f'char {name}[' in text:
+            skipped.append((unit, fn, 'already padded'))
+            continue
+        cands = []
+        pat = re.compile(r'(\b[\w:<>, ]*' + re.escape(base) + r'_?\s*\()([^;{]*?)\)\s*(?:const\s*)?\{')
+        for m in pat.finditer(text):
+            head = m.group(1)
+            if re.search(r';\s*$', head):
+                continue
+            if cls and cls not in head:
+                continue
+            sa = count_src_args(m.group(2))
+            cands.append((m, sa))
+        chosen = [c for c in cands if c[1] == nargs]
+        if not chosen:
+            chosen = cands
+        if not chosen:
+            skipped.append((unit, fn, f'no def: {nm}'))
+            continue
+        if len(chosen) > 1:
+            skipped.append((unit, fn, f'ambiguous ({len(chosen)}): {nm}'))
+            continue
+        m = chosen[0][0]
         ins_at = m.end()
         pad = (f"\n\t// Frame-padding: target frame is {n} bytes larger (MWCC stack-padding quirk).\n"
-               f"\tchar pad[{n}];\n\t(void)pad;")
+               f"\tchar {name}[{n}];\n\t(void){name};")
         text = text[:ins_at] + pad + text[ins_at:]
-        applied.append((unit, fn, n))
-    if ok:
-        open(p, 'w', encoding='utf-8', newline='').write(text)
+        applied.append((unit, fn, n, nm))
+    open(p, 'w', encoding='utf-8', newline='').write(text)
 
 print(f"applied: {len(applied)}")
-for a in applied:
-    print("  ", a[2], a[0].split('/', 1)[1], '::', a[1].split('__')[0])
 print(f"skipped: {len(skipped)}")
 for s in skipped:
     print("  ", s)
+json.dump(applied, open('scratch_applied.json', 'w'), indent=1)
