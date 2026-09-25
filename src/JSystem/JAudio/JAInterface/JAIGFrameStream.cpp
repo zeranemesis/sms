@@ -699,6 +699,9 @@ namespace StreamLib {
 
 	s32 callBack(void* param)
 	{
+	// Frame-padding: target frame is 32 bytes larger (MWCC stack-padding quirk).
+	char framePad_32_callBack[32];
+	(void)framePad_32_callBack;
 		bool decoded = false;
 
 		if (startInitFlag != 0) {

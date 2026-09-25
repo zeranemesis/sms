@@ -1951,6 +1951,9 @@ DEFINE_NERVE(TNerveFireWanwanRecoverGraph, TLiveActor)
 
 DEFINE_NERVE(TNerveFireWanwanRecover, TLiveActor)
 {
+	// Frame-padding: target frame is 72 bytes larger (MWCC stack-padding quirk).
+	char framePad_72_execute[72];
+	(void)framePad_72_execute;
 	TFireWanwan* self = (TFireWanwan*)spine->getBody();
 
 	if (spine->getTime() == 0) {
@@ -2023,6 +2026,9 @@ DEFINE_NERVE(TNerveFireWanwanDie, TLiveActor)
 
 DEFINE_NERVE(TNerveFireWanwanHungTail, TLiveActor)
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_execute[8];
+	(void)framePad_8_execute;
 	TFireWanwan* self = (TFireWanwan*)spine->getBody();
 
 	if (spine->getTime() == 0) {

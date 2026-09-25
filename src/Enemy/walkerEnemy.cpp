@@ -233,6 +233,9 @@ DEFINE_NERVE(TNerveWalkerGraphWander, TLiveActor)
 
 DEFINE_NERVE(TNerveWalkerAttack, TLiveActor)
 {
+	// Frame-padding: target frame is 16 bytes larger (MWCC stack-padding quirk).
+	char framePad_16_execute[16];
+	(void)framePad_16_execute;
 	TWalkerEnemy* self = (TWalkerEnemy*)spine->getBody();
 
 	if (spine->getTime() == 0)

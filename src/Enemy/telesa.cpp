@@ -1122,6 +1122,9 @@ DEFINE_NERVE(TNerveTelesaImitate, TLiveActor)
 
 DEFINE_NERVE(TNerveTelesaDie, TLiveActor)
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_execute[8];
+	(void)framePad_8_execute;
 	TTelesa* self = (TTelesa*)spine->getBody();
 
 	if (spine->getTime() == 0) {

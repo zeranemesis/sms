@@ -915,6 +915,9 @@ DEFINE_NERVE(TNerveTamaNokoSink, TLiveActor)
 // NOTE: lil shaking when mario sprays water on a sleeping tamanoko
 DEFINE_NERVE(TNerveTamaNokoHitWater, TLiveActor)
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_execute[8];
+	(void)framePad_8_execute;
 	TTamaNoko* self = (TTamaNoko*)spine->getBody();
 
 	if (spine->getTime() < 2) {

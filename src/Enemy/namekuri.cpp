@@ -188,6 +188,9 @@ TNameIndParCallback::TNameIndParCallback(TNameKuri* owner)
 void TNameIndParCallback::execute(JPABaseEmitter* param_1,
                                   JPABaseParticle* param_2)
 {
+	// Frame-padding: target frame is 16 bytes larger (MWCC stack-padding quirk).
+	char framePad_16_execute[16];
+	(void)framePad_16_execute;
 	if (mOwner->checkLiveFlag(LIVE_FLAG_CLIPPED_OUT)) {
 		MtxPtr mA = mOwner->getMActor()->getModel()->getAnmMtx(1);
 

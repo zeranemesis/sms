@@ -559,6 +559,9 @@ void TSleepPoiHana::load(JSUMemoryInputStream& stream)
 
 DEFINE_NERVE(TNervePoihanaSleep, TLiveActor)
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_execute[8];
+	(void)framePad_8_execute;
 	TPoiHana* self = (TPoiHana*)spine->getBody();
 
 	if (spine->getTime() == 0) {
@@ -616,6 +619,9 @@ DEFINE_NERVE(TNervePoihanaSleep, TLiveActor)
 
 DEFINE_NERVE(TNervePoihanaFreeze, TLiveActor)
 {
+	// Frame-padding: target frame is 16 bytes larger (MWCC stack-padding quirk).
+	char framePad_16_execute[16];
+	(void)framePad_16_execute;
 	TPoiHana* self = (TPoiHana*)spine->getBody();
 
 	if (spine->getTime() == 0) {

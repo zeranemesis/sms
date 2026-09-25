@@ -438,6 +438,9 @@ DEFINE_NERVE(TNerveMameGessoGraphJumpWander, TLiveActor)
 
 DEFINE_NERVE(TNerveMameGessoDamage, TLiveActor)
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_execute[8];
+	(void)framePad_8_execute;
 	TMameGesso* self = (TMameGesso*)spine->getBody();
 
 	if (spine->getTime() == 0) {
@@ -582,6 +585,9 @@ DEFINE_NERVE(TNerveMameGessoThrown, TLiveActor)
 
 DEFINE_NERVE(TNerveMameGessoObject, TLiveActor)
 {
+	// Frame-padding: target frame is 16 bytes larger (MWCC stack-padding quirk).
+	char framePad_16_execute[16];
+	(void)framePad_16_execute;
 	TMameGesso* self = (TMameGesso*)spine->getBody();
 
 	if (SMS_IsMarioStatusTypeSwimming()) {
