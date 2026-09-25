@@ -18,6 +18,9 @@ BOOL JPADraw::initialize(JPABaseEmitter* emitter,
                          JPATextureResource* tex_resource)
 {
 	int i;
+	// Frame-padding hack: original frame 0x190, ours 0x180 (MWCC stack-padding bug).
+	char pad[16];
+	(void)pad;
 
 	mDrawCtx.pcb = &cb;
 
@@ -1110,6 +1113,9 @@ void JPADraw::zDraw()
 
 void JPADraw::zDrawParticle()
 {
+	// Frame-padding hack: original frame 0x88, ours 0x80 (MWCC stack-padding bug).
+	char pad[8];
+	(void)pad;
 	unkC2 &= ~0x2;
 	setParticleClipBoard();
 	mDrawCtx.unk18 = mDrawCtx.mBaseEmitter->getParticleList();
@@ -1158,6 +1164,9 @@ void JPADraw::zDrawParticle()
 
 void JPADraw::zDrawChild()
 {
+	// Frame-padding hack: original frame 0x88, ours 0x80 (MWCC stack-padding bug).
+	char pad[8];
+	(void)pad;
 	unkC2 |= 0x2;
 	setChildClipBoard();
 	mDrawCtx.unk18 = mDrawCtx.mBaseEmitter->getChildParticleList();
@@ -1255,6 +1264,9 @@ s16 JPADraw::getSecondTextureID()
 void JPADraw::loadYBBMtx(MtxPtr mtx)
 {
 	JGeometry::TVec3<f32> v(0.0f, mtx[1][1], mtx[2][1]);
+	// Frame-padding hack: original frame 0x48, ours 0x40 (MWCC stack-padding bug).
+	char pad[8];
+	(void)pad;
 	JUT_ASSERT(!v.isZero());
 	v.normalize();
 
