@@ -44,6 +44,9 @@ void TMushroom1up::touchPlayer(THitActor* param_1)
 
 void TMushroom1up::makeObjAppeared()
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_makeObjAppeared[8];
+	(void)framePad_8_makeObjAppeared;
 	TMapObjBase::makeObjAppeared();
 	mStateTimer = 1200;
 	unk138      = 0;
@@ -144,6 +147,9 @@ void TMushroom1up::control()
 
 void TMushroom1up::perform(u32 cue, JDrama::TGraphics* graphics)
 {
+	// Frame-padding: target frame is 24 bytes larger (MWCC stack-padding quirk).
+	char framePad_24_perform[24];
+	(void)framePad_24_perform;
 	if (unk139 != 2 && mStateTimer < 240 && (cue & CUE_ENTRY)
 	    && gpMarDirector->mMoveTickCount % 6 > 2)
 		cue &= ~CUE_ENTRY;
@@ -162,6 +168,9 @@ TJumpBase::TJumpBase(const char* name)
 
 void TJumpBase::initMapObj()
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_initMapObj[8];
+	(void)framePad_8_initMapObj;
 	TMapObjBase::initMapObj();
 	if (mMapCollisionManager) {
 		TMapCollisionBase* base = mMapCollisionManager->unk8;

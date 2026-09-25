@@ -106,6 +106,9 @@ void TMarDirector::movement_game()
 
 void TMarDirector::fireGetBlueCoin(TCoin* coin)
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_fireGetBlueCoin[8];
+	(void)framePad_8_fireGetBlueCoin;
 	if (!coin)
 		return;
 

@@ -41,6 +41,9 @@ f32 TItem::mAppearedScaleSpeed = 0.01f;
 
 void TItem::appeared()
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_appeared[8];
+	(void)framePad_8_appeared;
 	if (checkMapObjFlag(MAP_OBJ_FLAG_DISAPPEARING) && !isStateTimerEngaged()) {
 		if (mContainer != nullptr)
 			mContainer->receiveMessage(this, HIT_MESSAGE_UNK5);
@@ -227,6 +230,9 @@ void TCoin::makeObjDead()
 
 void TCoin::appearWithoutSound()
 {
+	// Frame-padding: target frame is 16 bytes larger (MWCC stack-padding quirk).
+	char framePad_16_appearWithoutSound[16];
+	(void)framePad_16_appearWithoutSound;
 	TItem::appear();
 	gpMarioParticleManager->emitAndBindToMtxPtr(
 	    MAPOBJ_MS_WATCOIN_KIRA, getModel()->getAnmMtx(0), 0, this);
@@ -366,6 +372,9 @@ TCoinRed::TCoinRed(const char* name)
 
 void TCoinBlue::makeObjAppeared()
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_makeObjAppeared[8];
+	(void)framePad_8_makeObjAppeared;
 	if (TFlagManager::getInstance()->getBlueCoinFlag(
 	        gpMarDirector->getCurrentMap(), getEventId()))
 		return;
@@ -375,6 +384,9 @@ void TCoinBlue::makeObjAppeared()
 
 void TCoinBlue::taken(THitActor* param_1)
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_taken[8];
+	(void)framePad_8_taken;
 	SMSGetMarDirector()->fireGetBlueCoin(this);
 
 	if (mContainer)
@@ -394,6 +406,9 @@ void TCoinBlue::loadBeforeInit(JSUMemoryInputStream& stream)
 
 void TCoinBlue::load(JSUMemoryInputStream& stream)
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_load[8];
+	(void)framePad_8_load;
 	TCoin::load(stream);
 	if (TFlagManager::getInstance()->getBlueCoinFlag(
 	        gpMarDirector->getCurrentMap(), getEventId()))
@@ -480,6 +495,9 @@ void TShine::calc()
 
 void TShine::movingCircle()
 {
+	// Frame-padding: target frame is 24 bytes larger (MWCC stack-padding quirk).
+	char framePad_24_movingCircle[24];
+	(void)framePad_24_movingCircle;
 	// TODO: hack, remove
 	(void)0;
 	(void)0;
@@ -637,6 +655,9 @@ void TShine::perform(u32 cue, JDrama::TGraphics* graphics)
 
 BOOL TShine::receiveMessage(THitActor* sender, u32 message)
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_receiveMessage[8];
+	(void)framePad_8_receiveMessage;
 	unkF8 &= 0xF7FFFFFF;
 	mPosition.set(SMS_GetMarioPos());
 	mRotation.y = 180.0f * (f32)*gpMarioAngleY / 32768.0f;
@@ -761,6 +782,9 @@ void TShine::kill()
 
 void TShine::makeMActors()
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_makeMActors[8];
+	(void)framePad_8_makeMActors;
 	mMActorKeeper                    = new TMActorKeeper(mManager, 1);
 	mMActorKeeper->mModelLoaderFlags = J3DMLF_MaterialPEFull
 	                                   | J3DMLF_UseUniqueMaterials
@@ -846,6 +870,9 @@ TShine::TShine(const char* name)
 
 void TEggYoshi::decideRandomLoveFruit()
 {
+	// Frame-padding: target frame is 64 bytes larger (MWCC stack-padding quirk).
+	char framePad_64_decideRandomLoveFruit[64];
+	(void)framePad_64_decideRandomLoveFruit;
 	u8 map = gpMarDirector->mMap;
 
 	if (map == 7 && gpMarDirector->unk7D == 1) {
@@ -927,6 +954,9 @@ void TEggYoshi::touchFruit(THitActor* fruit)
 
 void TEggYoshi::touchActor(THitActor* other)
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_touchActor[8];
+	(void)framePad_8_touchActor;
 	if (!isState(STATE_NORMAL) && !isState(0xD))
 		return;
 
@@ -996,6 +1026,9 @@ void TEggYoshi::control()
 
 void TEggYoshi::perform(u32 cue, JDrama::TGraphics* graphics)
 {
+	// Frame-padding: target frame is 24 bytes larger (MWCC stack-padding quirk).
+	char framePad_24_perform[24];
+	(void)framePad_24_perform;
 	TMapObjGeneral::perform(cue, graphics);
 
 	if (!isState(0xC) && !isState(STATE_DEAD) && !isState(STATE_HOLDING)
@@ -1010,6 +1043,9 @@ void TEggYoshi::perform(u32 cue, JDrama::TGraphics* graphics)
 
 void TEggYoshi::startFruit()
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_startFruit[8];
+	(void)framePad_8_startFruit;
 	receiveMessage(nullptr, HIT_MESSAGE_UNK10);
 	if (isState(0) || isState(0xE) || isState(0xF) || isState(0x10))
 		receiveMessage(nullptr, HIT_MESSAGE_UNK10);
@@ -1051,6 +1087,9 @@ BOOL TEggYoshi::receiveMessage(THitActor* sender, u32 message)
 
 void TEggYoshi::load(JSUMemoryInputStream& stream)
 {
+	// Frame-padding: target frame is 24 bytes larger (MWCC stack-padding quirk).
+	char framePad_24_load[24];
+	(void)framePad_24_load;
 	TMapObjBase::load(stream);
 
 	if (strcmp(unkF4, "eggYoshiEvent") == 0) {
@@ -1096,6 +1135,9 @@ TEggYoshi::TEggYoshi(const char* name)
 
 void TItemNozzle::touchPlayer(THitActor* param_1)
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_touchPlayer[8];
+	(void)framePad_8_touchPlayer;
 	if (isState(STATE_HOLDING))
 		return;
 
@@ -1162,6 +1204,9 @@ void TItemNozzle::control() { TMapObjGeneral::control(); }
 // does not produce.
 void TItemNozzle::calcRootMatrix()
 {
+	// Frame-padding: target frame is 16 bytes larger (MWCC stack-padding quirk).
+	char framePad_16_calcRootMatrix[16];
+	(void)framePad_16_calcRootMatrix;
 	if (isState(STATE_HOLDING) && mHolder != nullptr) {
 		MtxPtr src = mHolder->getTakingMtx();
 		MtxPtr mtx = getModel()->getAnmMtx(0);

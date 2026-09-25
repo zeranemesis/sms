@@ -607,6 +607,9 @@ void TFireWanwanTailHit::clipNodes(JDrama::TGraphics*) { }
 
 void TFireWanwanTailHit::movementBody(const JGeometry::TVec3<f32>& param_1)
 {
+	// Frame-padding: target frame is 64 bytes larger (MWCC stack-padding quirk).
+	char framePad_64_movementBody[64];
+	(void)framePad_64_movementBody;
 	if (mOwner->isHungTailNerve() && !mOwner->unk194->isTaken()
 	    && !mOwner->isReadyToFly()) {
 		unkA4->mBoundRate
@@ -763,6 +766,9 @@ void TFireWanwan::setMActorAndKeeper()
 
 void TFireWanwan::reset()
 {
+	// Frame-padding: target frame is 32 bytes larger (MWCC stack-padding quirk).
+	char framePad_32_reset[32];
+	(void)framePad_32_reset;
 	mPosition = mInitialPosition;
 
 	unk194->mIsOnFire = true;

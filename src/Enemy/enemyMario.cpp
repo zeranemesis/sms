@@ -803,6 +803,9 @@ void TEnemyMario::emAppear()
 
 void TEnemyMario::startDisappear(u16 doing)
 {
+	// Frame-padding: target frame is 16 bytes larger (MWCC stack-padding quirk).
+	char framePad_16_startDisappear[16];
+	(void)framePad_16_startDisappear;
 	mDisappearPosition = mPosition;
 
 	u8 currentMap      = gpMarDirector->getCurrentMap();
@@ -1064,6 +1067,9 @@ void TEnemyMario::emPreDownAnimation()
 #pragma dont_inline on
 void TEnemyMario::emDownAnimation()
 {
+	// Frame-padding: target frame is 40 bytes larger (MWCC stack-padding quirk).
+	char framePad_40_emDownAnimation[40];
+	(void)framePad_40_emDownAnimation;
 	changePlayerStatus(MARIO_STATUS_NOMOTION, 0, true);
 	setAnimation(ANIM_FALL_DOWN_WAIT, 1.0f);
 
@@ -1221,6 +1227,9 @@ void TEnemyMario::emReplayRunAway()
 
 void TEnemyMario::decideDoingAfterCarry()
 {
+	// Frame-padding: target frame is 32 bytes larger (MWCC stack-padding quirk).
+	char framePad_32_decideDoingAfterCarry[32];
+	(void)framePad_32_decideDoingAfterCarry;
 	if (checkEMFlag(EM_FLAG_ENFORCE_TAKE)) {
 		offEMFlag(EM_FLAG_ENFORCE_TAKE);
 		emReplayWaitingToReplayJumpToNearestNode();

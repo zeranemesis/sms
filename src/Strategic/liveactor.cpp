@@ -28,6 +28,9 @@ f32 TLiveActor::mVelocityMinY = -40.0f;
 TLiveActor::TLiveActor(const char* name)
     : TTakeActor(name)
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_TLiveActor[8];
+	(void)framePad_8_TLiveActor;
 	mManager       = nullptr;
 	mMActor        = nullptr;
 	mMActorKeeper  = nullptr;
@@ -439,6 +442,9 @@ MtxPtr TLiveActor::getTakingMtx()
 
 void TLiveActor::initAnmSound()
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_initAnmSound[8];
+	(void)framePad_8_initAnmSound;
 	if (mAnmSound)
 		return;
 

@@ -190,6 +190,9 @@ TMovieDirector::~TMovieDirector()
 
 u32 TMovieDirector::decideNextMode(s32* param_1)
 {
+	// Frame-padding: target frame is 48 bytes larger (MWCC stack-padding quirk).
+	char framePad_48_decideNextMode[48];
+	(void)framePad_48_decideNextMode;
 
 	if (gpApplication.getMovie() != 14) {
 		if (!(gpApplication.getMovie() == 15 || gpApplication.getMovie() == 16

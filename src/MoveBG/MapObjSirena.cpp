@@ -58,6 +58,9 @@ TRoulette::TRoulette(const char* name)
     , unk144(0.2f)
     , unk150(nullptr)
 {
+	// Frame-padding: target frame is 16 bytes larger (MWCC stack-padding quirk).
+	char framePad_16_TRoulette[16];
+	(void)framePad_16_TRoulette;
 	unk148 = 0;
 	unk14A = 0;
 	unk14C = 0;
@@ -146,6 +149,9 @@ void TRoulette::setRollSp(f32 sp)
 
 void TRoulette::switchStop()
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_switchStop[8];
+	(void)framePad_8_switchStop;
 	if (unk150->unk6C != 0) {
 		if (SMS_GetMarioPos().y < 20.0f + SMS_GetMarioGrLevel()
 		    && unk13C != 0.0f) {
@@ -220,6 +226,9 @@ TSlotDrum::TSlotDrum(const char* name)
 
 void TSlotDrum::initMapObj()
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_initMapObj[8];
+	(void)framePad_8_initMapObj;
 	unk148 = 3;
 	unk14C = 400.0f;
 	unk150 = mPosition.y;
@@ -646,6 +655,9 @@ void TCasinoPanelGate::initMapObj()
 
 void TCasinoPanelGate::moveObject()
 {
+	// Frame-padding: target frame is 24 bytes larger (MWCC stack-padding quirk).
+	char framePad_24_moveObject[24];
+	(void)framePad_24_moveObject;
 	TLiveActor::moveObject();
 	mPosition.y = unk150 - unk14C;
 	if (unk16D) {
@@ -822,6 +834,9 @@ void TDonchou::initMapObj()
 
 void TDonchou::loadAfter()
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_loadAfter[8];
+	(void)framePad_8_loadAfter;
 	TMapObjBase::loadAfter();
 	if (gpApplication.mCurrArea.getStage() == 14
 	    && gpMarDirector->getCurrentStage() == 0) {
@@ -1159,6 +1174,9 @@ TWarpAreaActor::TWarpAreaActor(const char* name)
 
 u32 TChestRevolve::touchWater(THitActor* actor)
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_touchWater[8];
+	(void)framePad_8_touchWater;
 	if (isState(STATE_NORMAL)) {
 		mState = STATE_REVOLVING;
 		startAnim(1);
@@ -1184,6 +1202,9 @@ void TChestRevolve::control()
 
 BOOL TPanelRevolve::receiveMessage(THitActor* actor, u32 message)
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_receiveMessage[8];
+	(void)framePad_8_receiveMessage;
 	if (isState(STATE_NORMAL)) {
 		SMSGetMSound()->startSoundActor(MSD_SE_OBJ_PANEL_ROLL, &mPosition, 0,
 		                                nullptr, 0, 4);
@@ -1196,6 +1217,9 @@ BOOL TPanelRevolve::receiveMessage(THitActor* actor, u32 message)
 
 void TPanelRevolve::touchPlayer(THitActor* actor)
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_touchPlayer[8];
+	(void)framePad_8_touchPlayer;
 	if (marioHipAttack() && isState(STATE_NORMAL)) {
 		SMSGetMSound()->startSoundActor(MSD_SE_OBJ_PANEL_ROLL, &mPosition, 0,
 		                                nullptr, 0, 4);
@@ -1222,6 +1246,9 @@ void TPanelRevolve::control()
 
 void TPictureTelesa::afterFinishedAnim()
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_afterFinishedAnim[8];
+	(void)framePad_8_afterFinishedAnim;
 	TWaterHitPictureHideObj::afterFinishedAnim();
 	if (isActorType(0x400001A2)) {
 		SMSGetMSound()->startSoundSystemSE(MSD_SE_SY_CLEAR_SIGN_BIG, 0, nullptr,

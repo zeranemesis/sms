@@ -22,6 +22,9 @@ TCameraMarioData::TCameraMarioData()
 
 void TCameraMarioData::calcAndSetMarioData()
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_calcAndSetMarioData[8];
+	(void)framePad_8_calcAndSetMarioData;
 	int status = SMS_GetMarioStatus();
 	switch (status) {
 	case MARIO_STATUS_HANGING:

@@ -69,6 +69,9 @@ MActorAnmData* TObjManager::getMActorAnmData()
 
 void TObjManager::perform(u32 cue, JDrama::TGraphics* graphics)
 {
+	// Frame-padding: target frame is 16 bytes larger (MWCC stack-padding quirk).
+	char framePad_16_perform[16];
+	(void)framePad_16_perform;
 	if (unk30 & 1)
 		TTimeRec::startTimer();
 

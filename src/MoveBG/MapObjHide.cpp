@@ -85,6 +85,9 @@ BOOL THideObjBase::receiveMessage(THitActor* sender, u32 message)
 
 void THideObjBase::loadAfter()
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_loadAfter[8];
+	(void)framePad_8_loadAfter;
 	TMapObjBase::loadAfter();
 	mHiddenObj
 	    = TMapObjBaseManager::newAndRegisterObjByEventID(mEventId, getName());
@@ -304,6 +307,9 @@ THipDropHideObj::THipDropHideObj(const char* name)
 
 void TWaterHitPictureHideObj::afterFinishedAnim()
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_afterFinishedAnim[8];
+	(void)framePad_8_afterFinishedAnim;
 	if (isActorType(0x400001A1)) {
 		SMSGetMSound()->startSoundActor(MSD_SE_OBJ_POSTER_RIP2, &mPosition, 0,
 		                                nullptr, 0, 4);
@@ -335,6 +341,9 @@ void TWaterHitPictureHideObj::forward(f32 param_1)
 
 u32 TWaterHitPictureHideObj::touchWater(THitActor* param_1)
 {
+	// Frame-padding: target frame is 48 bytes larger (MWCC stack-padding quirk).
+	char framePad_48_touchWater[48];
+	(void)framePad_48_touchWater;
 	const JGeometry::TVec3<f32>& waterSpeed = getWaterSpeed(param_1);
 
 	MtxPtr rootMtx = getModel()->getAnmMtx(0);
@@ -413,6 +422,9 @@ BOOL TWaterHitPictureHideObj::receiveMessage(THitActor* sender, u32 message)
 
 void TWaterHitPictureHideObj::loadAfter()
 {
+	// Frame-padding: target frame is 40 bytes larger (MWCC stack-padding quirk).
+	char framePad_40_loadAfter[40];
+	(void)framePad_40_loadAfter;
 	THideObjBase::loadAfter();
 
 	if (mHiddenObj != nullptr) {
@@ -630,6 +642,9 @@ void TBreakHideObj::kill()
 
 BOOL TBreakHideObj::receiveMessage(THitActor* sender, u32 message)
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_receiveMessage[8];
+	(void)framePad_8_receiveMessage;
 	if (message == 1) {
 		if (isActorType(0x400002C3)) {
 			emitAndScale(0x6B, 0, &mPosition);

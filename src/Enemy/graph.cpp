@@ -646,6 +646,9 @@ void TGraphWeb::getNodeIndexInXZRange(const JGeometry::TVec3<f32>&, f32,
 #pragma dont_inline on
 void TGraphWeb::calcGraphDirection(int n)
 {
+	// Frame-padding: target frame is 40 bytes larger (MWCC stack-padding quirk).
+	char framePad_40_calcGraphDirection[40];
+	(void)framePad_40_calcGraphDirection;
 	TGraphNode& graphNode = getGraphNode(n);
 	TRailNode* railNode   = graphNode.getRailNode();
 	for (int i = 0; i < railNode->mConnectionNum; ++i) {
@@ -868,6 +871,9 @@ void TGraphTracer::setParamFromGraph()
 
 void TGraphTracer::setTo(int node_idx)
 {
+	// Frame-padding: target frame is 72 bytes larger (MWCC stack-padding quirk).
+	char framePad_72_setTo[72];
+	(void)framePad_72_setTo;
 	mPrevIdx = -1;
 	mCurrIdx = node_idx;
 	setParamFromGraph();
@@ -875,6 +881,9 @@ void TGraphTracer::setTo(int node_idx)
 
 int TGraphTracer::moveTo(int node_idx)
 {
+	// Frame-padding: target frame is 72 bytes larger (MWCC stack-padding quirk).
+	char framePad_72_moveTo[72];
+	(void)framePad_72_moveTo;
 	if (node_idx < 0)
 		return node_idx;
 

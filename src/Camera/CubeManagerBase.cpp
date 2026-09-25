@@ -47,6 +47,9 @@ void TCubeManagerBase::initializer()
 
 void TCubeManagerBase::load(JSUMemoryInputStream& stream)
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_load[8];
+	(void)framePad_8_load;
 	JDrama::TNameRef::load(stream);
 	JDrama::TNameRef* root
 	    = JDrama::TNameRefGen::getInstance()->getRootNameRef();
@@ -84,6 +87,9 @@ int TCubeManagerBase::getInCubeNo(const Vec& v) const
 
 bool TCubeManagerBase::isInCube(const Vec& v, s32 i) const
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_isInCube[8];
+	(void)framePad_8_isInCube;
 	bool result = false;
 	if (i >= 0 && i < unk10) {
 		TCubeGeneralInfo& info = (*unk14)[i];
@@ -139,6 +145,9 @@ inline bool TCubeManagerFast::isInOtherCube(const Vec& pos) const
 
 bool SMS_IsInOtherFastCube(const Vec& pos)
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_SMS_IsInOtherFastCube[8];
+	(void)framePad_8_SMS_IsInOtherFastCube;
 	bool result = false;
 	if (!gpMarDirector->isDemoModeNow()
 	    && (gpCubeFastA->isInOtherCube(pos) || gpCubeFastB->isInOtherCube(pos)

@@ -614,6 +614,9 @@ void TKumokun::pushNextAnm(const char* name, bool start)
 
 void TKumokun::changeBck(const char* name)
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_changeBck[8];
+	(void)framePad_8_changeBck;
 	mMActor->setBck(name);
 	setCurAnmSound();
 
@@ -630,6 +633,9 @@ void TKumokun::changeBck(const char* name)
 
 void TKumokun::setDeadAnm()
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_setDeadAnm[8];
+	(void)framePad_8_setDeadAnm;
 	switch (unk1EC) {
 	case 0:
 		changeBck("kumo_down1");

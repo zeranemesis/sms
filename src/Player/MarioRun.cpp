@@ -195,6 +195,9 @@ BOOL TMario::doRunningAnimation()
 
 void TMario::getSlopeNormalAccele(f32* arg0, f32* arg1)
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_getSlopeNormalAccele[8];
+	(void)framePad_8_getSlopeNormalAccele;
 	if (isForceSlip()) {
 		*arg0 = mSlipParamsAll.mSlopeAcceleUp.get();
 		*arg1 = mSlipParamsAll.mSlopeAcceleDown.get();
@@ -230,6 +233,9 @@ void TMario::getSlopeNormalAccele(f32* arg0, f32* arg1)
 
 void TMario::getSlopeSlideAccele(f32* arg0, f32* arg1)
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_getSlopeSlideAccele[8];
+	(void)framePad_8_getSlopeSlideAccele;
 	if (isForceSlip()) {
 		*arg0 = mSlipParamsAll.mSlideAcceleUp.get();
 		*arg1 = mSlipParamsAll.mSlideAcceleDown.get();
@@ -264,6 +270,9 @@ void TMario::getSlopeSlideAccele(f32* arg0, f32* arg1)
 
 f32 TMario::getChangeAngleSpeed()
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_getChangeAngleSpeed[8];
+	(void)framePad_8_getChangeAngleSpeed;
 	f32 angSp;
 	if (isForceSlip()) {
 		angSp = (f32)mSlipParamsAll.mSlideAngleYSp.get();
@@ -287,6 +296,9 @@ f32 TMario::getChangeAngleSpeed()
 
 f32 TMario::getSlideStickMult()
 {
+	// Frame-padding: target frame is 32 bytes larger (MWCC stack-padding quirk).
+	char framePad_32_getSlideStickMult[32];
+	(void)framePad_32_getSlideStickMult;
 	(void)0;
 	(void)0;
 	(void)0;
@@ -1368,6 +1380,9 @@ BOOL TMario::oilSlope()
 
 f32 TMario::downingCommon(int anim, f32 limit, int arg2)
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_downingCommon[8];
+	(void)framePad_8_downingCommon;
 	f32 animRate = setAnimation(anim, 1.0f);
 	if (animRate < limit) {
 		slopeProcess();
@@ -1474,6 +1489,9 @@ BOOL TMario::catchDown()
 
 BOOL TMario::loserDown()
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_loserDown[8];
+	(void)framePad_8_loserDown;
 	slopeProcess();
 	mForwardVel *= 0.9f;
 	if (mForwardVel * mForwardVel < 1.0f)
@@ -1508,6 +1526,9 @@ BOOL TMario::loserDown()
 
 BOOL TMario::jumpSlipCommon(s16 anim, u32 status)
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_jumpSlipCommon[8];
+	(void)framePad_8_jumpSlipCommon;
 	if (mInput & 0x1) {
 		slopeProcess();
 		mForwardVel *= 0.98f;

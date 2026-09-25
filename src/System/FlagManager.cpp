@@ -6,6 +6,9 @@ TFlagManager* TFlagManager::smInstance = 0;
 
 TFlagManager* TFlagManager::start(JKRHeap* heap)
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_start[8];
+	(void)framePad_8_start;
 	if (smInstance == nullptr)
 		smInstance = new (heap, 0) TFlagManager;
 
@@ -479,6 +482,9 @@ void TFlagManager::correctFlag()
 
 void TFlagManager::save(JSUMemoryOutputStream& out)
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_save[8];
+	(void)framePad_8_save;
 	mLastSaveTimeBackup = mLastSaveTime;
 	mLastSaveTime       = OSGetTime();
 

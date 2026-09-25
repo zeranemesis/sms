@@ -161,6 +161,9 @@ void SMSLoadArchiveARAM(TARAMBlock* param_1, const char* param_2)
 
 void SMSMountAramArchive(JKRMemArchive* param_1, TARAMBlock& param_2)
 {
+	// Frame-padding: target frame is 32 bytes larger (MWCC stack-padding quirk).
+	char framePad_32_SMSMountAramArchive[32];
+	(void)framePad_32_SMSMountAramArchive;
 	if (param_2.unk4) {
 		JKRAram::aramToMainRam(param_2.unk0, (u8*)gpMarDirector->getUnkD4(), 0,
 		                       0, EXPAND_SWITCH_DECOMPRESS, 0x64000, nullptr,
@@ -175,6 +178,9 @@ void SMSMountAramArchive(JKRMemArchive* param_1, TARAMBlock& param_2)
 
 JKRArchive* SMSSwitch2DArchive(const char* param_1, TARAMBlock& param_2)
 {
+	// Frame-padding: target frame is 32 bytes larger (MWCC stack-padding quirk).
+	char framePad_32_SMSSwitch2DArchive[32];
+	(void)framePad_32_SMSSwitch2DArchive;
 	JKRMemArchive* arch = (JKRMemArchive*)JKRFileLoader::getVolume(param_1);
 	arch->unmountFixed();
 	SMSMountAramArchive(arch, param_2);

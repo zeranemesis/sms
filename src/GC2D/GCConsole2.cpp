@@ -2217,6 +2217,9 @@ void TGCConsole2::startDisappearTank()
 
 void TGCConsole2::startAppearCoin()
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_startAppearCoin[8];
+	(void)framePad_8_startAppearCoin;
 	if (unk108->getPane()->isVisible()) {
 		return;
 	}
@@ -2528,6 +2531,9 @@ void TGCConsole2::startAppearJetBalloon(int nozzleKind, int count)
 
 void TGCConsole2::startInsertJetBalloon()
 {
+	// Frame-padding: target frame is 16 bytes larger (MWCC stack-padding quirk).
+	char framePad_16_startInsertJetBalloon[16];
+	(void)framePad_16_startInsertJetBalloon;
 	unk3D = 1;
 	unk59 = 1;
 
@@ -2551,6 +2557,9 @@ void TGCConsole2::startInsertJetBalloon()
 
 void TGCConsole2::startAppearRedCoin()
 {
+	// Frame-padding: target frame is 16 bytes larger (MWCC stack-padding quirk).
+	char framePad_16_startAppearRedCoin[16];
+	(void)framePad_16_startAppearRedCoin;
 	unk3C = 1;
 	unk59 = 1;
 

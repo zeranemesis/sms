@@ -429,6 +429,9 @@ void TBEelTears::perform(u32 cue, JDrama::TGraphics* graphics)
 
 BOOL TBEelTears::receiveMessage(THitActor*, u32 message)
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_receiveMessage[8];
+	(void)framePad_8_receiveMessage;
 	if (message == HIT_MESSAGE_SPRAYED_BY_WATER) {
 		mStateTimer = 60;
 		if (mSpine->getCurrentNerve() == &TNerveBEelTearsMoveUp::theNerve()
@@ -1073,6 +1076,9 @@ TBossEelEye::TBossEelEye(const TLiveActor* owner, int jointIndex,
     , mBlurTimer(0)
     , mBlurDuration(50)
 {
+	// Frame-padding: target frame is 16 bytes larger (MWCC stack-padding quirk).
+	char framePad_16_TBossEelEye[16];
+	(void)framePad_16_TBossEelEye;
 	mBlendModel = new SDLModel(modelData, modelFlags, 1);
 	mBlendModel->getModelData()->getMaterialName()->getIndex("_mat7");
 	getMActor()->initNormalMotionBlend();
@@ -1258,6 +1264,9 @@ TBossEelCollision::TBossEelCollision(MtxPtr collisionMtx, const char* name)
 
 void TBossEelCollision::perform(u32 cue, JDrama::TGraphics* graphics)
 {
+	// Frame-padding: target frame is 24 bytes larger (MWCC stack-padding quirk).
+	char framePad_24_perform[24];
+	(void)framePad_24_perform;
 	if (cue & CUE_MOVE) {
 		calcEntryRadius();
 		for (s32 i = 0; i < mColCount; ++i) {
@@ -1559,6 +1568,9 @@ void TBossEel::calcAndSetCollisionCubeBite_()
 
 void TBossEel::updateTearsCnt()
 {
+	// Frame-padding: target frame is 80 bytes larger (MWCC stack-padding quirk).
+	char framePad_80_updateTearsCnt[80];
+	(void)framePad_80_updateTearsCnt;
 	static const s32 eyeTable[] = { 0, 2, 1, 3 };
 
 	++mTearCycleTimer;
@@ -1643,6 +1655,9 @@ void TBossEel::shedTears(MtxPtr spawnMtx)
 #pragma dont_inline on
 void TBossEel::forceShedTears(bool rearEyes)
 {
+	// Frame-padding: target frame is 48 bytes larger (MWCC stack-padding quirk).
+	char framePad_48_forceShedTears[48];
+	(void)framePad_48_forceShedTears;
 	mTearEyeToggle = !mTearEyeToggle;
 	s32 eyeIndex;
 	if (!rearEyes) {

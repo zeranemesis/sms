@@ -83,6 +83,9 @@ void TMameGessoManager::initSetEnemies() { }
 
 void TMameGessoManager::perform(u32 cue, JDrama::TGraphics* graphics)
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_perform[8];
+	(void)framePad_8_perform;
 	for (int i = 0; i < mObjNum; i++) {
 		if (!(cue & CUE_MOVE))
 			continue;

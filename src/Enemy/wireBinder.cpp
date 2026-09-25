@@ -107,6 +107,9 @@ void TWireBinder::isStartWire(const JGeometry::TVec3<f32>&, f32) const { }
 bool TWireBinder::isEndWire(const JGeometry::TVec3<f32>& param_1,
                             f32 param_2) const
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_isEndWire[8];
+	(void)framePad_8_isEndWire;
 	f32 posInWire = getRangePos(param_1);
 	f32 targetPos = 0.0f < param_2 ? 1.0f : 0.0f;
 

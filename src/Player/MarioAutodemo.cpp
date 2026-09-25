@@ -251,6 +251,9 @@ BOOL TMario::warpIn()
 
 bool TMario::isUnUsualStageStart()
 {
+	// Frame-padding: target frame is 40 bytes larger (MWCC stack-padding quirk).
+	char framePad_40_isUnUsualStageStart[40];
+	(void)framePad_40_isUnUsualStageStart;
 	// Missing stack space
 	// volatile u32 padding[14];
 
@@ -366,6 +369,9 @@ BOOL TMario::toroccoStart()
 
 BOOL TMario::warpOut()
 {
+	// Frame-padding: target frame is 16 bytes larger (MWCC stack-padding quirk).
+	char framePad_16_warpOut[16];
+	(void)framePad_16_warpOut;
 	// Missing stack space
 	// volatile u32 padding[4];
 
@@ -522,6 +528,9 @@ BOOL TMario::disappear()
 
 BOOL TMario::demoMain()
 {
+	// Frame-padding: target frame is 16 bytes larger (MWCC stack-padding quirk).
+	char framePad_16_demoMain[16];
+	(void)framePad_16_demoMain;
 	// Missing stack space
 	// volatile u32 padding[10];
 

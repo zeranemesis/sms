@@ -115,6 +115,9 @@ TCardSave::TCardSave(const char* name, bool param_2)
 
 void TCardSave::load(JSUMemoryInputStream& stream)
 {
+	// Frame-padding: target frame is 16 bytes larger (MWCC stack-padding quirk).
+	char framePad_16_load[16];
+	(void)framePad_16_load;
 	JDrama::TViewObj::load(stream);
 	initData(gpMarDirector->unk18[0]);
 }

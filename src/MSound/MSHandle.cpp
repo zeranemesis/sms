@@ -124,6 +124,9 @@ void MSHandle::setSeDistancePitch(u8 moveTime)
 
 void MSHandle::setSeDistancePan(u8 moveTime)
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_setSeDistancePan[8];
+	(void)framePad_8_setSeDistancePan;
 	FabricatedPositionInfo* ptr = unk1C;
 
 	f32 thing = ptr->unk18;
