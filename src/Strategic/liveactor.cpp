@@ -143,6 +143,9 @@ void TLiveActor::initLodAnm(const TLodAnmIndex* param_1, int param_2,
 
 void TLiveActor::init(TLiveManager* manager)
 {
+	// Frame-padding: target frame is 24 bytes larger (MWCC stack-padding quirk).
+	char framePad_24_init[24];
+	(void)framePad_24_init;
 	if (!manager) {
 		if (TObjChara* chara = (TObjChara*)unk3C) {
 			mMActorKeeper = new TMActorKeeper(nullptr, 1);

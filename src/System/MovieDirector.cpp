@@ -172,6 +172,9 @@ int TMovieDirector::rsetup()
 
 TMovieDirector::~TMovieDirector()
 {
+	// Frame-padding: target frame is 16 bytes larger (MWCC stack-padding quirk).
+	char framePad_16_TMovieDirector[16];
+	(void)framePad_16_TMovieDirector;
 	if (JKRMemArchive* arc
 	    = (JKRMemArchive*)JKRFileLoader::getVolume("endsave"))
 		arc->unmountFixed();

@@ -1004,6 +1004,9 @@ BOOL TMario::toroccoing()
 
 BOOL TMario::walkEnd()
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_walkEnd[8];
+	(void)framePad_8_walkEnd;
 	if (!(mInput & 0x10)) {
 		if (isRunningSlipStart())
 			return changePlayerStatus(MARIO_STATUS_SLIP, 0, false);

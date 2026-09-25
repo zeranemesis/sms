@@ -489,6 +489,9 @@ void TMapObjGeneral::checkGroundCollision(JGeometry::TVec3<f32>* param_1)
 
 void TMapObjGeneral::calcVelocity()
 {
+	// Frame-padding: target frame is 40 bytes larger (MWCC stack-padding quirk).
+	char framePad_40_calcVelocity[40];
+	(void)framePad_40_calcVelocity;
 	if (checkLiveFlag2(LIVE_FLAG_AIRBORNE)) {
 		f32 dVar5 = getGravityY();
 		mVelocity.y -= dVar5;
