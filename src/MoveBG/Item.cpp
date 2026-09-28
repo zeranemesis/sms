@@ -407,9 +407,6 @@ void TCoinBlue::loadBeforeInit(JSUMemoryInputStream& stream)
 
 void TCoinBlue::load(JSUMemoryInputStream& stream)
 {
-	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
-	char framePad_8_load[8];
-	(void)framePad_8_load;
 	TCoin::load(stream);
 	if (TFlagManager::getInstance()->getBlueCoinFlag(
 	        SMSGetMarDirector()->getCurrentMap(), getEventId()))

@@ -313,9 +313,9 @@ TMovieDirector::~TMovieDirector()
 
 u32 TMovieDirector::decideNextMode(s32* param_1)
 {
-	// Frame-padding: target frame is 48 bytes larger (MWCC stack-padding quirk).
-	char framePad_48_decideNextMode[48];
-	(void)framePad_48_decideNextMode;
+	// Frame-padding: target frame is 24 bytes larger (MWCC stack-padding quirk).
+	char framePad_24_decideNextMode[24];
+	(void)framePad_24_decideNextMode;
 
 	if (SMSGetApplication()->getMovie() != 14) {
 		if (!(SMSGetApplication()->getMovie() == 15

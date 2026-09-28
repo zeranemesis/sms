@@ -184,17 +184,7 @@ void TMario::windMove(const JGeometry::TVec3<f32>& wind)
 
 void TMario::getGroundJumpPower() const { }
 
-#pragma dont_inline on
-static BOOL callYoshiOnYoshi(TYoshi* yoshi)
-{
-	return yoshi->onYoshi();
-}
-
-// Force emission of TYoshi::onYoshi() by referencing it
-extern BOOL (TYoshi::* const yoshiOnYoshiPtr)() = &TYoshi::onYoshi;
-#pragma dont_inline off
-
-BOOL TMario::onYoshi() const { return mYoshi != nullptr && callYoshiOnYoshi((TYoshi*)mYoshi); }
+BOOL TMario::onYoshi() const { return mYoshi != nullptr && mYoshi->onYoshi(); }
 
 void TMario::addVelocity(f32 param_1)
 {

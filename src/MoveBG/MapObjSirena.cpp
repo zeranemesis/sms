@@ -58,6 +58,9 @@ TRoulette::TRoulette(const char* name)
     , unk144(0.2f)
     , unk150(nullptr)
 {
+	// Frame-padding: target frame is 16 bytes larger (MWCC stack-padding quirk).
+	char framePad_16_TRoulette[16];
+	(void)framePad_16_TRoulette;
 	unk148.r = 0;
 	unk148.g = 0;
 	unk148.b = 0;
@@ -585,7 +588,6 @@ int TItemSlotDrum::getForcastResult(int idx)
 {
 	f32 angle = unk13C[idx];
 	f32 speed = unk138[idx];
-	int attempts = 0;
 	for (;;) {
 		if (fabsf(speed) > unk160) {
 			angle += speed;
@@ -604,8 +606,6 @@ int TItemSlotDrum::getForcastResult(int idx)
 			if (angle <= 0.0f)
 				angle += 360.0f;
 			if ((int)fabsf(angle) % unk168 == 0)
-				break;
-			if (++attempts > 10000)
 				break;
 		}
 	}
@@ -833,9 +833,6 @@ void TDonchou::initMapObj()
 
 void TDonchou::loadAfter()
 {
-	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
-	char framePad_8_loadAfter[8];
-	(void)framePad_8_loadAfter;
 	TMapObjBase::loadAfter();
 	if (SMSGetApplication()->mCurrArea.getStage() == 14
 	    && SMSGetMarDirector()->getCurrentStage() == 0) {

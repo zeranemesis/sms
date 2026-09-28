@@ -200,9 +200,6 @@ BOOL TMario::doRunningAnimation()
 
 void TMario::getSlopeNormalAccele(f32* arg0, f32* arg1)
 {
-	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
-	char framePad_8_getSlopeNormalAccele[8];
-	(void)framePad_8_getSlopeNormalAccele;
 	if (isForceSlip()) {
 		*arg0 = mSlipParamsAll.mSlopeAcceleUp.get();
 		*arg1 = mSlipParamsAll.mSlopeAcceleDown.get();
@@ -238,9 +235,6 @@ void TMario::getSlopeNormalAccele(f32* arg0, f32* arg1)
 
 void TMario::getSlopeSlideAccele(f32* arg0, f32* arg1)
 {
-	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
-	char framePad_8_getSlopeSlideAccele[8];
-	(void)framePad_8_getSlopeSlideAccele;
 	if (isForceSlip()) {
 		*arg0 = mSlipParamsAll.mSlideAcceleUp.get();
 		*arg1 = mSlipParamsAll.mSlideAcceleDown.get();
@@ -275,9 +269,6 @@ void TMario::getSlopeSlideAccele(f32* arg0, f32* arg1)
 
 f32 TMario::getChangeAngleSpeed()
 {
-	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
-	char framePad_8_getChangeAngleSpeed[8];
-	(void)framePad_8_getChangeAngleSpeed;
 	f32 angSp;
 	if (isForceSlip()) {
 		angSp = (f32)mSlipParamsAll.mSlideAngleYSp.get();

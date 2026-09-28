@@ -1953,6 +1953,9 @@ BOOL TWaterGun::damage()
 
 void TWaterGun::changeBackup()
 {
+	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
+	char framePad_8_changeBackup[8];
+	(void)framePad_8_changeBackup;
 	// TODO: Missing stack space (original has 8 extra bytes for alignment)
 	// volatile u32 unused2[5];
 	if (mSwitchToSecondNozzleProgress == 0.0f) {
