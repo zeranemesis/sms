@@ -55,7 +55,8 @@ void TMario::hitNormal(THitActor* actor)
 // TODO: wrong size! maybe we return the receiveMessage result?
 void TMario::hitHipDrop(THitActor* actor)
 {
-	if (mStatus == MARIO_STATUS_HIP_DROP && mStatusState == 2
+	if (mStatus == MARIO_STATUS_HIP_DROP
+	    && (mStatusState == 2 || mStatusState == 3)
 	    && actor->mPosition.y < mPosition.y) {
 		actor->receiveMessage(this, HIT_MESSAGE_HIP_DROP);
 	}
@@ -67,8 +68,6 @@ void TMario::hitPushup(THitActor* actor)
 		actor->receiveMessage(this, HIT_MESSAGE_PUSH_UP);
 	hitNormal(actor);
 }
-
-void TMario::hitPull(THitActor*) { }
 
 void TMario::hitMario(THitActor* actor)
 {
@@ -95,8 +94,6 @@ void TMario::hitNpc(THitActor* actor)
 	if (((TLiveActor*)actor)->checkLiveFlag(LIVE_FLAG_UNK100000))
 		wantToTakeActor(actor);
 }
-
-void TMario::hitPool(THitActor*) { }
 
 void TMario::wantToTakeActor(THitActor* actor)
 {
@@ -223,8 +220,6 @@ void TMario::hitPickUpEnemy(THitActor* actor)
 		keepDistance(*actor, 0.0f);
 }
 
-void TMario::hitSurfingBoard(THitActor*) { }
-
 // As in we pull but don't "keep" the object, cuz it's a tentacle/tail?
 void TMario::hitNoKeepPull(THitActor* actor)
 {
@@ -258,7 +253,7 @@ void TMario::checkCollision()
 			f32 dx   = yt.x - mPosition.x;
 			f32 dist = std::sqrtf(dx * dx + dz * dz);
 
-			if (checkStatusType(MARIO_STATUS_FLAG_JUMPING) && isHolding()
+			if (checkStatusType(MARIO_STATUS_FLAG_JUMPING) && !isHolding()
 			    && mVel.y < 0.0f && yt.y < mPosition.y && mStatus != 0x89C
 			    && mStatus != MARIO_STATUS_THROWN_DOWN
 			    && mStatus != MARIO_STATUS_BACK_JUMP && dist < 180.0f) {

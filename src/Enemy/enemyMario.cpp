@@ -127,7 +127,11 @@ void TEnemyMario::initValues()
 	unk468 = 0.0f;
 	unk46C = 0.0f;
 
+#ifdef VERSION_GMSP01
+	mAnmSound = new MAnmSoundMario(SMSGetMSound());
+#else
 	mAnmSound = new MAnmSound(SMSGetMSound());
+#endif
 	mAnmSound->initAnmSound(nullptr, 1, 0.0f);
 	unk4EC          = 0;
 	mBlendLogicOp   = 10;
@@ -266,12 +270,6 @@ BOOL TEnemyMario::canJumpToNode() const
 	return mEMario->getTracer()->getGraph()->getGraphNode(nodeIndex).checkFlag(
 	    2);
 }
-
-// UNUSED in retail (inlined away), size 0x8 = 2 PPC instructions. A plain
-// bit-test compiles to 7 (MWCC's neg/subic/subfe bool normalization). 2 instrs
-// is just a load + blr, i.e. no room to mask — the real body must return a
-// non-normalized value. Exact form is TODO (dead code, no callsite to anchor).
-bool TEnemyMario::isDispPencil() const { return false; }
 
 void TEnemyMario::initEnemyValues()
 {
@@ -803,9 +801,8 @@ void TEnemyMario::emAppear()
 
 void TEnemyMario::startDisappear(u16 doing)
 {
-	// Frame-padding: target frame is 16 bytes larger (MWCC stack-padding quirk).
-	char framePad_16_startDisappear[16];
-	(void)framePad_16_startDisappear;
+	volatile u8 stackPad[16];
+	(void)stackPad;
 	mDisappearPosition = mPosition;
 
 	u8 currentMap      = gpMarDirector->getCurrentMap();
@@ -1067,9 +1064,8 @@ void TEnemyMario::emPreDownAnimation()
 #pragma dont_inline on
 void TEnemyMario::emDownAnimation()
 {
-	// Frame-padding: target frame is 40 bytes larger (MWCC stack-padding quirk).
-	char framePad_40_emDownAnimation[40];
-	(void)framePad_40_emDownAnimation;
+	volatile u8 stackPad[40];
+	(void)stackPad;
 	changePlayerStatus(MARIO_STATUS_NOMOTION, 0, true);
 	setAnimation(ANIM_FALL_DOWN_WAIT, 1.0f);
 
@@ -1227,9 +1223,8 @@ void TEnemyMario::emReplayRunAway()
 
 void TEnemyMario::decideDoingAfterCarry()
 {
-	// Frame-padding: target frame is 32 bytes larger (MWCC stack-padding quirk).
-	char framePad_32_decideDoingAfterCarry[32];
-	(void)framePad_32_decideDoingAfterCarry;
+	volatile u8 stackPad[32];
+	(void)stackPad;
 	if (checkEMFlag(EM_FLAG_ENFORCE_TAKE)) {
 		offEMFlag(EM_FLAG_ENFORCE_TAKE);
 		emReplayWaitingToReplayJumpToNearestNode();
@@ -1444,6 +1439,8 @@ void TEnemyMario::considerAfter()
 
 void TEnemyMario::hitWater(THitActor* sender)
 {
+	volatile u8 stackPad[16];
+	(void)stackPad;
 	if (mSpecialModel != nullptr)
 		return;
 
@@ -1536,19 +1533,15 @@ void TEnemyMario::checkReturn()
 
 	int nodeIndex
 	    = mEMario->getTracer()->getGraph()->findNearestNodeIndex(mPosition, -1);
-	BOOL searching = true;
-	while (searching) {
+	int nodeCount = mEMario->getTracer()->getGraph()->getNodeNum();
+	for (int i = 0; i < nodeCount; ++i) {
 		JGeometry::TVec3<f32> point;
-		mEMario->getTracer()->getGraph()->getGraphNode(nodeIndex).getPoint(
+		int currentNode = (nodeIndex + i) % nodeCount;
+		mEMario->getTracer()->getGraph()->getGraphNode(currentNode).getPoint(
 		    &point);
 
-		if (point.distance(SMS_GetMarioPos()) > 1000.0f) {
-			searching = false;
+		if (point.distance(SMS_GetMarioPos()) > 1000.0f)
 			mPosition = point;
-		}
-
-		nodeIndex
-		    = (nodeIndex + 1) % mEMario->getTracer()->getGraph()->getNodeNum();
 	}
 }
 

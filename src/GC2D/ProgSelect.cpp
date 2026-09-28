@@ -1,4 +1,10 @@
 #include <GC2D/ProgSelect.hpp>
+
+
+// rogue include: the original TU opens .rodata with the dummy string
+// pair from System/DummyStrings.hpp; without it every string offset in
+// this object is shifted.
+#include <System/DummyStrings.hpp>
 #include <stdio.h>
 #include <JSystem/J2D/J2DTextBox.hpp>
 #include <JSystem/JUtility/JUTResFont.hpp>
@@ -6,6 +12,23 @@
 #include <JSystem/J2D/J2DPrint.hpp>
 #include <System/Application.hpp>
 #include <System/MarioGamePad.hpp>
+#include <GC2D/MessageUtil.hpp>
+#include <JSystem/JKernel/JKRFileLoader.hpp>
+
+void TProgSelect::setLang(s32 lang)
+{
+	static const char* filename[] = {
+	    "/nintendo/progmessage_en.bmg", "/nintendo/progmessage_ge.bmg",
+	    "/nintendo/progmessage_fr.bmg", "/nintendo/progmessage_sp.bmg",
+	    "/nintendo/progmessage_it.bmg",
+	};
+
+	const char* fileName = filename[lang];
+	unk130 = JKRFileLoader::getGlbResource(fileName);
+	snprintf(unk1C, 0x100, SMSGetMessageData(unk130, 0));
+	snprintf(unk120[0]->getStringPtr(), 0x20, SMSGetMessageData(unk130, 4));
+	snprintf(unk120[1]->getStringPtr(), 0x20, SMSGetMessageData(unk130, 1));
+}
 
 TProgSelect::TProgSelect(u8 param_1, const char* name)
     : JDrama::TViewObj(name)
@@ -17,9 +40,12 @@ TProgSelect::TProgSelect(u8 param_1, const char* name)
 	f32 sync     = SMSGetVSyncTimesPerSec();
 	unk128       = 0;
 	mRefreshRate = sync;
-	snprintf(unk1C, 0x100, "プログレッシブモードで\n表示しますか？");
-	unk120[0] = new J2DTextBox(gpSystemFont->getResFont(), "はい");
-	unk120[1] = new J2DTextBox(gpSystemFont->getResFont(), "いいえ");
+	unk130       = nullptr;
+	char* yesText = new char[0x20];
+	unk120[0] = new J2DTextBox(gpSystemFont->getResFont(), yesText);
+	char* noText = new char[0x20];
+	unk120[1] = new J2DTextBox(gpSystemFont->getResFont(), noText);
+	setLang(0);
 
 	unk120[0]->setFontSize(28, 28);
 	unk120[1]->setFontSize(28, 28);
@@ -65,24 +91,10 @@ void TProgSelect::perform(u32 cue, JDrama::TGraphics* graphics)
 		           || thing()) {
 			{
 				if (!mSelection) {
-					snprintf(unk1C, 256,
-					         "GM[0]画面表示モードは\n"
-					         "FX[24]FY[24]CC[ffff00]"
-					         "プログレッシブモード"
-					         "FX[20]FY[20]CC[ffffff]に\n"
-					         "セットされました。");
-					// TODO: GMSP01 asm calls OSSetEuRgb60Mode(1) here instead
-					// of OSSetProgressiveMode(1), and fetches its string via
-					// SMSGetMessageData rather than a literal -- needs
-					// proper re-decompilation for this version.
+					snprintf(unk1C, 256, SMSGetMessageData(unk130, 3));
 					OSSetEuRgb60Mode(1);
 				} else {
-					snprintf(unk1C, 256,
-					         "GM[0]画面表示モードは\n"
-					         "FX[24]FY[24]CC[ffff00]"
-					         "インターレースモード"
-					         "FX[20]FY[20]CC[ffffff]に\n"
-					         "セットされました。");
+					snprintf(unk1C, 256, SMSGetMessageData(unk130, 2));
 					OSSetEuRgb60Mode(0);
 				}
 				mHideTextBoxes = true;

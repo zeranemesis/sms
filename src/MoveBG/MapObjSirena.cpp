@@ -112,7 +112,7 @@ void TRoulette::moveObject()
 {
 	TLiveActor::moveObject();
 	if (unk142 != 0)
-		mRotation.x += unk13C;
+		mRotation.y += unk13C;
 
 	if (unk141 != 0 && unk140 != 0) {
 		gpMarioOriginal->mGamePad->onNeutralMarioKey();
@@ -585,6 +585,7 @@ int TItemSlotDrum::getForcastResult(int idx)
 {
 	f32 angle = unk13C[idx];
 	f32 speed = unk138[idx];
+	int attempts = 0;
 	for (;;) {
 		if (fabsf(speed) > unk160) {
 			angle += speed;
@@ -603,6 +604,8 @@ int TItemSlotDrum::getForcastResult(int idx)
 			if (angle <= 0.0f)
 				angle += 360.0f;
 			if ((int)fabsf(angle) % unk168 == 0)
+				break;
+			if (++attempts > 10000)
 				break;
 		}
 	}
@@ -835,7 +838,7 @@ void TDonchou::loadAfter()
 	(void)framePad_8_loadAfter;
 	TMapObjBase::loadAfter();
 	if (SMSGetApplication()->mCurrArea.getStage() == 14
-	    && gpMarDirector->getCurrentStage() == 0) {
+	    && SMSGetMarDirector()->getCurrentStage() == 0) {
 		unk144
 		    = static_cast<TSlotDrum*>(JDrama::TNameRefGen::search("srotdram"));
 		unk148 = static_cast<TItemSlotDrum*>(

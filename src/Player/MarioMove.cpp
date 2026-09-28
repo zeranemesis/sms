@@ -184,7 +184,17 @@ void TMario::windMove(const JGeometry::TVec3<f32>& wind)
 
 void TMario::getGroundJumpPower() const { }
 
-BOOL TMario::onYoshi() const { return mYoshi != nullptr && mYoshi->onYoshi(); }
+#pragma dont_inline on
+static BOOL callYoshiOnYoshi(TYoshi* yoshi)
+{
+	return yoshi->onYoshi();
+}
+
+// Force emission of TYoshi::onYoshi() by referencing it
+extern BOOL (TYoshi::* const yoshiOnYoshiPtr)() = &TYoshi::onYoshi;
+#pragma dont_inline off
+
+BOOL TMario::onYoshi() const { return mYoshi != nullptr && callYoshiOnYoshi((TYoshi*)mYoshi); }
 
 void TMario::addVelocity(f32 param_1)
 {
@@ -1319,10 +1329,7 @@ void TMario::checkReturn()
 
 void TMario::checkThrowObject()
 {
-	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
-	char framePad_8_checkThrowObject[8];
-	(void)framePad_8_checkThrowObject;
-	if (mModel->unkC[0].checkPass(4.0f)) {
+	if (mModel->getFrameCtrl(0).checkPass(4.0f)) {
 		startVoice(MSD_SE_MV15_EXERT_INST_01);
 		dropObject();
 	}
@@ -1877,6 +1884,7 @@ void TMario::checkPlayerAction(JDrama::TGraphics* graphics)
 void TMario::stateMachine()
 {
 	int result = 1;
+	int loopCount = 0;
 	while (result != 0) {
 		switch (mStatus & MARIO_STATUS_TYPE_MASK) {
 		case MARIO_STATUS_TYPE_WAITING:
@@ -1901,6 +1909,9 @@ void TMario::stateMachine()
 			result = actnMain();
 			break;
 		}
+
+		if (++loopCount > 10)
+			break;
 	}
 }
 
@@ -2305,7 +2316,6 @@ void TMario::getOffYoshi(bool fly)
 
 	setAnimation(ANIM_JUMP, 1.0f);
 	unk78 &= ~0x100;
-	mPosition.y += 100.0f;
 	mForwardVel = -8.0f;
 
 	mWaterGun->changeNozzle(TWaterGun::Hover, true);
@@ -2359,7 +2369,7 @@ void TMario::thinkDiving() { }
 
 void TMario::thinkTorocco()
 {
-	mToroccoAngle += unk108->mStickH * mDeParams.mRecoverTimer.get();
+	mToroccoAngle += unk108->mStickHS16 * mDeParams.mToroccoRotSp.get();
 }
 
 void TMario::thinkSound()

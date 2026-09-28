@@ -49,11 +49,27 @@ public:
 
 class TWaterHitActor : public THitActor {
 public:
+	TWaterHitActor() { }
+	TWaterHitActor(const char* name)
+	    : THitActor(name)
+	    , mWaterHitCounter(0)
+	{
+	}
+
 	virtual BOOL receiveMessage(THitActor* sender, u32 message);
-	void onWaterHitCounter() { unk68 = 0x3C; }
+	void onWaterHitCounter();
+	// fabricated
+	s16 getWaterHitCounter() const { return mWaterHitCounter; }
 
 public:
-	/* 0x68 */ int unk68;
+	// TODO: the methods of this class live in Enemy/BossHanachanSub.cpp and
+	// treat this as a halfword counter (sth), while the water particle code
+	// reads a whole word at the same offset. Something about this class is
+	// still wrong, the union just lets both kinds of users compile.
+	union {
+		/* 0x68 */ int unk68;
+		/* 0x68 */ s16 mWaterHitCounter;
+	};
 };
 
 class TModelWaterManager;
@@ -70,15 +86,12 @@ public:
 	virtual void load(JSUMemoryInputStream&);
 	virtual void loadAfter();
 	f32 getWPGravity(int) const;
-	void getWaterAlpha() const;
 	bool askHitWaterParticleOnGround(const JGeometry::TVec3<f32>&);
 	void makeEmit(const TWaterEmitInfo&);
 	u8 emitRequest(const TWaterEmitInfo&);
 	void splashSound(const JGeometry::TVec3<f32>&, f32) const;
 	void splashGround(int);
-	void touchingExec(int);
 	void splashWall(int);
-	void splashWallPosSize(const JGeometry::TVec3<f32>&, f32);
 	f32 getPlaneFriction(const TBGCheckData*);
 	f32 getPlaneFall(const TBGCheckData*);
 	f32 getPlaneVanishSpeed(const TBGCheckData*);

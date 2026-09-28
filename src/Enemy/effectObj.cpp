@@ -295,11 +295,6 @@ void TEffectColumWaterManager::createModelData()
 	createModelDataArray(entry);
 }
 
-TEffectColumWater::TEffectColumWater(const char* name)
-    : TEffectModel(name)
-{
-}
-
 void TEffectColumWater::init(TLiveManager* param_1)
 {
 	TEffectModel::init(param_1);
@@ -377,10 +372,6 @@ void TEffectBombColumWaterManager::createModelData()
 	createModelDataArray(entry);
 }
 
-TEffectBombColumWater::TEffectBombColumWater(const char* name)
-    : TEffectModel(name)
-{
-}
 void TEffectBombColumWater::init(TLiveManager* param_1)
 {
 	TEffectModel::init(param_1);
@@ -461,11 +452,6 @@ void TEffectColumSandManager::createModelData()
 	createModelDataArray(entry);
 }
 
-TEffectColumSand::TEffectColumSand(const char* name)
-    : TEffectModel(name)
-{
-}
-
 void TEffectColumSand::init(TLiveManager* param_1)
 {
 	TEffectModel::init(param_1);
@@ -534,11 +520,6 @@ void TEffectExplosionManager::createModelData()
 		{ nullptr, 0, 0 },
 	};
 	createModelDataArray(entry);
-}
-
-TEffectExplosion::TEffectExplosion(const char* name)
-    : TEffectModel(name)
-{
 }
 
 void TEffectExplosion::init(TLiveManager* param_1)

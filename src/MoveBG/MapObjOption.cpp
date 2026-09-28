@@ -1,3 +1,7 @@
+// rogue include: the original TU opens .rodata with this dummy string
+// pair, ahead of every other string constant in the object.
+#include <M3DUtil/InfectiousStrings.hpp>
+
 #include <MoveBG/MapObjOption.hpp>
 #include <Map/MapCollisionEntry.hpp>
 #include <MarioUtil/RumbleMgr.hpp>
@@ -7,10 +11,8 @@
 #include <JSystem/JDrama/JDRNameRefGen.hpp>
 #include <JSystem/JParticle/JPAResourceManager.hpp>
 
-// rogue includes needed for matching sinit & bss
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
-#include <M3DUtil/InfectiousStrings.hpp>
 
 void TFileLoadBlock::makeBlockNoCard() { }
 
@@ -28,25 +30,20 @@ void TFileLoadBlock::makeBlockRock()
 
 static int sRumbleTime = 8;
 
-void TFileLoadBlock::pushed()
-{
-	startBck("fileloadblock");
-	gpCardLoad->setSelected(unk138);
-	SMSRumbleMgr->start(0x15, sRumbleTime, (float*)nullptr);
-	gpMarioParticleManager->emit(MAP_MAP_MS_M_FILEBLOCK, &unk144, 0, nullptr);
-	gpMarioParticleManager->emit(PARTICLE_MS_M_AMIATTACK, &unk144, 0, nullptr);
-	mStateTimer         = 120;
-	unk13C->mStateTimer = 120;
-	unk140->mStateTimer = 120;
-}
-
 void TFileLoadBlock::touchPlayer(THitActor* param_1)
 {
-	// Frame-padding: target frame is 16 bytes larger (MWCC stack-padding quirk).
-	char framePad_16_touchPlayer[16];
-	(void)framePad_16_touchPlayer;
-	if (isState(STATE_NORMAL) && marioHeadAttack() && !isStateTimerEngaged())
-		pushed();
+	if (isState(STATE_NORMAL) && marioHeadAttack() && !isStateTimerEngaged()) {
+		startBck("fileloadblock");
+		gpCardLoad->setSelected(unk138);
+		SMSRumbleMgr->start(0x15, sRumbleTime, (float*)nullptr);
+		gpMarioParticleManager->emit(MAP_MAP_MS_M_FILEBLOCK, &unk144, 0,
+		                             nullptr);
+		gpMarioParticleManager->emit(PARTICLE_MS_M_AMIATTACK, &unk144, 0,
+		                             nullptr);
+		mStateTimer         = 120;
+		unk13C->mStateTimer = 120;
+		unk140->mStateTimer = 120;
+	}
 }
 
 BOOL TFileLoadBlock::receiveMessage(THitActor* sender, u32 message)
@@ -56,7 +53,16 @@ BOOL TFileLoadBlock::receiveMessage(THitActor* sender, u32 message)
 	(void)framePad_16_receiveMessage;
 	if (isState(STATE_NORMAL) && message == HIT_MESSAGE_PUSH_UP
 	    && !isStateTimerEngaged()) {
-		pushed();
+		startBck("fileloadblock");
+		gpCardLoad->setSelected(unk138);
+		SMSRumbleMgr->start(0x15, sRumbleTime, (float*)nullptr);
+		gpMarioParticleManager->emit(MAP_MAP_MS_M_FILEBLOCK, &unk144, 0,
+		                             nullptr);
+		gpMarioParticleManager->emit(PARTICLE_MS_M_AMIATTACK, &unk144, 0,
+		                             nullptr);
+		mStateTimer         = 120;
+		unk13C->mStateTimer = 120;
+		unk140->mStateTimer = 120;
 		return true;
 	}
 

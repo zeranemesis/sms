@@ -23,8 +23,15 @@ public:
 class TSandBase : public TMapObjBase {
 public:
 	void isDown() const;
-	void withering();
+	virtual bool withering();
 	TSandBase(const char*);
+	static f32 mScaleMin;
+
+public:
+	/* 0x138 */ f32 unk138;
+	/* 0x13C */ f32 unk13C;
+	/* 0x140 */ u32 unk140;
+	/* 0x144 */ TMapObjBase* unk144;
 };
 
 class TSandLeafBase : public TSandBase {
@@ -32,7 +39,10 @@ public:
 	void grow();
 	void control();
 	void initMapObj();
-	TSandLeafBase(const char* name = "すなやまの芽の土台");
+	TSandLeafBase(const char* name = "すなやまの芽の土台")
+	    : TSandBase(name)
+	{
+	}
 };
 
 class TSandBomb : public TSandLeaf {
@@ -67,11 +77,17 @@ public:
 	void loadAfter();
 	void initMapObj();
 	TSandBombBase(const char* name = "すなやま爆弾の土台");
+
+public:
+	/* 0x148 */ u32 unk148;
+	/* 0x14C */ f32 unk14C;
+	/* 0x150 */ f32 unk150;
+	/* 0x154 */ f32 unk154;
 };
 
 class TSandCastle : public TSandBombBase {
 public:
-	void withering();
+	bool withering();
 	void expanded();
 	void explode();
 	void waitBeforeExplode();
@@ -108,7 +124,10 @@ public:
 	void putOnLight(TLiveActor*);
 	void perform(u32 cue, JDrama::TGraphics* graphics);
 	void load(JSUMemoryInputStream&);
-	TShiningStone(const char* name = "太陽石");
+	TShiningStone(const char* name = "太陽石")
+	    : THitActor(name)
+	{
+	}
 };
 
 class TMammaBlockRotate : public TMapObjBase {
@@ -124,26 +143,44 @@ class TMammaYacht : public TMapObjBase {
 public:
 	void control();
 	void initMapObj();
-	TMammaYacht(const char* name = "砂の城");
+	TMammaYacht(const char* name = "砂の城")
+	    : TMapObjBase(name)
+	{
+	}
 };
 
 class TSandBird : public TJointCoin {
 public:
+	~TSandBird();
 	virtual void control();
 	virtual void initMapObj();
 	virtual TMapObjBase* makeObjFromJointName(const char*, unsigned short);
 	virtual bool nameIsObj(const char*);
 
 	TSandBird(const char* name = "おおすな鳥");
+
+public:
+	/* 0x148 */ u32 unk148;
+	/* 0x14C */ u32 unk14C;
+	/* 0x150 */ u8 unk150;
+	/* 0x151 */ u8 unk151;
 };
 
 class TGoalWatermelon : public TMapObjBase {
 public:
+	~TGoalWatermelon();
 	void touchActor(THitActor*);
 	void control();
 	void loadAfter();
 	void load(JSUMemoryInputStream&);
 	TGoalWatermelon(const char* name = "スイカゴール");
+
+public:
+	/* 0x138 */ TLiveActor* unk138;
+	/* 0x13C */ TMapObjBase* unk13C;
+	/* 0x140 */ f32 unk140;
+	/* 0x144 */ f32 unk144;
+	/* 0x148 */ f32 unk148;
 };
 
 class TMammaMirrorMapOperator : public JDrama::TViewObj {
@@ -158,7 +195,10 @@ public:
 class TSandEgg : public TMapObjBase {
 public:
 	u32 getSDLModelFlag() const;
-	TSandEgg(const char* name = "すなのたまご");
+	TSandEgg(const char* name = "すなのたまご")
+	    : TMapObjBase(name)
+	{
+	}
 };
 
 #endif

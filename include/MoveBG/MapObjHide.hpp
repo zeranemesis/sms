@@ -37,7 +37,10 @@ public:
 /// Reveals the hidden object upon being sprayed by water
 class TWaterHitHideObj : public THideObjBase {
 public:
-	TWaterHitHideObj(const char* name = "水ヒットオブジェ");
+	TWaterHitHideObj(const char* name = "水ヒットオブジェ")
+	    : THideObjBase(name)
+	{
+	}
 	virtual void load(JSUMemoryInputStream&);
 	virtual u32 touchWater(THitActor*);
 };
@@ -45,7 +48,10 @@ public:
 /// Reveals the hidden object upon touching a fruit
 class TFruitHitHideObj : public THideObjBase {
 public:
-	TFruitHitHideObj(const char* name = "水ヒットオブジェ");
+	TFruitHitHideObj(const char* name = "水ヒットオブジェ")
+	    : THideObjBase(name)
+	{
+	}
 	virtual void load(JSUMemoryInputStream&);
 	virtual void touchActor(THitActor*);
 	virtual void touchFruit(THitActor*);
@@ -54,7 +60,11 @@ public:
 /// Reveals the hidden object upon having a fruit put inside of it
 class TFruitBasket : public TFruitHitHideObj {
 public:
-	TFruitBasket(const char* name = "バスケット");
+	TFruitBasket(const char* name = "バスケット")
+	    : TFruitHitHideObj(name)
+	    , unk150(0)
+	{
+	}
 	virtual void loadAfter();
 	virtual void touchFruit(THitActor*);
 	virtual void countFruit(THitActor*);
@@ -79,7 +89,10 @@ public:
 /// Reveals the hidden object upon being hip-dropped by Mario
 class THipDropHideObj : public THideObjBase {
 public:
-	THipDropHideObj(const char* name = "ヒップドロップオブジェ");
+	THipDropHideObj(const char* name = "ヒップドロップオブジェ")
+	    : THideObjBase(name)
+	{
+	}
 	virtual void touchPlayer(THitActor*);
 };
 
@@ -99,7 +112,7 @@ public:
 	virtual void control();
 	virtual void touchActor(THitActor*);
 	virtual u32 touchWater(THitActor*);
-	virtual const JGeometry::TVec3<f32>& getObjAppearPos() { return mPosition; }
+	virtual const JGeometry::TVec3<f32>& getObjAppearPos() const { return mPosition; }
 	virtual void afterFinishedAnim();
 	virtual void forward(f32);
 
@@ -126,7 +139,7 @@ public:
 	virtual void loadAfter();
 	virtual void initMapObj();
 
-	virtual const JGeometry::TVec3<f32>& getObjAppearPos()
+	virtual const JGeometry::TVec3<f32>& getObjAppearPos() const
 	{
 		return unk174->mPosition;
 	}

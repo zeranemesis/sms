@@ -28,6 +28,9 @@ void load2DResource2Aram();
 #endif
 f32 SMSGetAnmFrameRate();
 void* SMSLoadArchive(const char*, void*, u32, JKRHeap*);
+#ifdef VERSION_GMSP01
+void load2DResource2Aram();
+#endif
 
 struct TARAMBlock {
 	/* 0x0 */ JKRAramBlock* mBlock;

@@ -3,6 +3,15 @@
 #include <Enemy/Graph.hpp>
 #include <MarioUtil/MathUtil.hpp>
 #include <M3DUtil/InfectiousStrings.hpp>
+#include <MSound/MSound.hpp>
+#include <MSound/SoundEffects.hpp>
+
+// rogue include: pulls in JALList.hpp's JSUList<T>::smList template statics,
+// which is what marioEU.dol registers from __sinit_riccohook_cpp (764 bytes,
+// the same 15 registrations as every other TU) and lays out in .bss after this
+// object's own statics (target .bss 0xC0 = 0xC + 15 * 0xC).
+#include <MSound/MSSetSound.hpp>
+#include <MSound/MSoundBGM.hpp>
 
 // @non-matching -- the issue seems to stem from the JDrama TNameRefGen
 // search/push_back calls.
@@ -102,8 +111,18 @@ void TRiccoHook::perform(u32 cue, JDrama::TGraphics* graphics)
 {
 	TSpineEnemy::perform(cue, graphics);
 	mHookTake->perform(cue, graphics);
-	if ((cue & CUE_MOVE) && mTimer > 0) {
-		mTimer--;
+	if (cue & CUE_MOVE) {
+		if (mTimer > 0) {
+			mTimer--;
+		} else {
+			if (mInstanceIndex & 1) {
+				SMSGetMSound()->startSoundActor(MSD_SE_OBJ_CRANE_SIDEMOVE1,
+				                                &mPosition, 0, nullptr, 0, 4);
+			} else {
+				SMSGetMSound()->startSoundActor(MSD_SE_OBJ_CRANE_SIDEMOVE2,
+				                                &mPosition, 0, nullptr, 0, 4);
+			}
+		}
 	}
 }
 

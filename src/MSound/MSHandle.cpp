@@ -90,6 +90,8 @@ f32 MSHandle::MSACos(f32 param_1)
 
 void MSHandle::setSeDistanceParameters()
 {
+	volatile u8 stackPad[8];
+	(void)stackPad;
 	u8 type = smSeCategory[get_thing(mSoundID)].mType;
 	if (mState == SOUNDSTATE_Prepared)
 		type = 0;
@@ -98,7 +100,7 @@ void MSHandle::setSeDistanceParameters()
 	setSeDistancePan(type);
 	setSeDistancePitch(type);
 	setSePositionDopplar();
-	setSeDistanceFir(type);
+	setSeDistanceFxmix(type);
 
 	if (!(getSwBit() & JAISeSwBit_NoMapFxmix)) {
 		f32 dVar4 = interPointer->getMapInfoFxParameter(mActorGroundNumber);
@@ -124,9 +126,8 @@ void MSHandle::setSeDistancePitch(u8 moveTime)
 
 void MSHandle::setSeDistancePan(u8 moveTime)
 {
-	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
-	char framePad_8_setSeDistancePan[8];
-	(void)framePad_8_setSeDistancePan;
+	volatile u8 stackPad[8];
+	(void)stackPad;
 	FabricatedPositionInfo* ptr = unk1C;
 
 	f32 thing = ptr->unk18;
@@ -203,6 +204,8 @@ f32 MSHandle::calcDolby(const Vec& pos, f32 dist)
 
 void MSHandle::setSeDistanceVolume(u8 moveTime)
 {
+	volatile u8 stackPad[8];
+	(void)stackPad;
 	u32 swBit = getSwBit();
 	if (swBit & MSSeSwBit_ModDistanceVolume) {
 		f32 d = JALSystem::processModDistVolume(mSoundID, unk1C->unk18);

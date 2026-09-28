@@ -1,4 +1,10 @@
 #include <MSound/MSoundSE.hpp>
+
+
+// rogue include: the original TU opens .rodata with the dummy string
+// pair from System/DummyStrings.hpp; without it every string offset in
+// this object is shifted.
+#include <System/DummyStrings.hpp>
 #include <MSound/MSound.hpp>
 #include <MSound/MSRandVol.hpp>
 #include <MSound/MSSetSound.hpp>
@@ -50,16 +56,13 @@ MSRandVol::MSRandVol(u32 param)
 	mAmplitudes[3] = 1.0f;
 }
 
-u32 MSRandVol::getRandomVolume(u32 param_1, u32 param_2) { }
-
 f32 MSRandVol::getRandVol(u32 param_1)
 {
-	f32 d = JALCalc::getRandom(
-	            mAmplitudes[param_1 >> MSSeSwBit_RandomVolumeAmplitudeShift & 3]
-	                * mAmplitude,
-	            mCSlopes[param_1 >> MSSeSwBit_RandomVolumeCSlopeShift & 3],
-	            mPSlopes[param_1 >> MSSeSwBit_RandomVolumePSlopeShift & 3])
-	        + 1.0f;
+	f32 amp = mAmplitudes[param_1 >> MSSeSwBit_RandomVolumeAmplitudeShift & 3]
+	          * mAmplitude;
+	f32 p   = mPSlopes[param_1 >> MSSeSwBit_RandomVolumePSlopeShift & 3];
+	f32 c   = mCSlopes[param_1 >> MSSeSwBit_RandomVolumeCSlopeShift & 3];
+	f32 d   = JALCalc::getRandom(amp, c, p) + 1.0f;
 
 	f32 x = d < 0.0f ? 0.0f : d;
 	return x > 2.0f ? 2.0f : x;
@@ -210,9 +213,9 @@ void MSoundSE::construct()
 	MSRandPlay::construct(MSD_SE_OBJ_MONTE_DAY_A1, 0x66, 0x181, JALCalc::cEqualCSlope, JALCalc::cPlusPSlope);
 	MSRandPlay::construct(MSD_SE_OBJ_MONTE_NIGHT_A1, 0x66, 0x181, JALCalc::cEqualCSlope, JALCalc::cPlusPSlope);
 	MSRandPlay::construct(MSD_SE_OBJ_BIRD_DOL_CHUN, 0x66, 0x181, JALCalc::cEqualCSlope, JALCalc::cPlusPSlope);
-	MSRandPlay::construct(MSD_SE_OBJ_BIRD_BIA_1, 0x56, 0xf3,  JALCalc::cEqualCSlope, JALCalc::cPlusPSlope);
-	MSRandPlay::construct(MSD_SE_OBJ_MONTE_DAY_A1, 0x56, 0xf3,  JALCalc::cEqualCSlope, JALCalc::cPlusPSlope);
-	MSRandPlay::construct(MSD_SE_OBJ_MONTE_NIGHT_A1, 8,    0xd,   JALCalc::cEqualCSlope, JALCalc::cPlusPSlope);
+	MSRandPlay::construct(MSD_SE_OBJ_BIRD_BIA_1, 0x2d, 0xad,  JALCalc::cEqualCSlope, JALCalc::cPlusPSlope);
+	MSRandPlay::construct(MSD_SE_OBJ_MONTE_DAY_A1, 0x2d, 0xad,  JALCalc::cEqualCSlope, JALCalc::cPlusPSlope);
+	MSRandPlay::construct(MSD_SE_OBJ_MONTE_NIGHT_A1, 0x2d, 0xad, JALCalc::cEqualCSlope, JALCalc::cPlusPSlope);
 	// clang-format on
 
 	// clang-format off
@@ -272,6 +275,8 @@ void MSoundSE::construct()
     MSD_SE_OBJ_WATERMELON_BROLL, 0.01f,    10.0f,    1.0f,  0.8f,  1.2f,  JALCalc::CS_NEGATIVE_CURVE, 0.0f, 30.0f,     1);
   JALSystem::append(JALSystem::ModType_JALSeModPitFunk, "通常スイカバ回転",
     MSD_SE_OBJ_WATERMELON_SROLL, 0.01f,    10.0f,    1.0f,  0.8f,  1.2f,  JALCalc::CS_NEGATIVE_CURVE, 0.0f, 30.0f,     1);
+  JALSystem::append(JALSystem::ModType_JALSeModVolFunk, "設置鏡音",
+    MSD_SE_OBJ_MA_MIRROR_IMPACT, 0.05f,    1.0f,     0.0f,  0.3f,  1.0f,  JALCalc::CS_UNKNOWN_2,      0.0f, 10.0f,     1);
 
   JALSystem::append(JALSystem::ModType_JALSeModVolFGrp, "ロープ揺れ音",
     0,      1.0f,     52.0f,    3.98f, 0.0f,  1.0f,  JALCalc::CS_UNKNOWN_2,      0.0f, 300.0f,    1);
@@ -362,14 +367,14 @@ void MSoundSE::construct()
 		    0xf, 200.0f, 0xb4, 1.0f, 1.0f, 0.0f, false);
 		// clang-format off
 		grp->append(new MSSetSoundMember(MSD_SE_OBJ_KAMOME_SOLO, nullptr, 60.0f));
-		grp->append(new MSSetSoundMember(MSD_SE_OBJ_KAMOME_SOLO, nullptr, 60.0f));
-		grp->append(new MSSetSoundMember(MSD_SE_OBJ_KAMOME_SOLO, nullptr, 60.0f));
-		grp->append(new MSSetSoundMember(MSD_SE_OBJ_KAMOME_SOLO, nullptr, 60.0f));
-		grp->append(new MSSetSoundMember(MSD_SE_OBJ_KAMOME_SOLO, nullptr, 60.0f));
-		grp->append(new MSSetSoundMember(MSD_SE_OBJ_KAMOME_SOLO, nullptr, 60.0f));
-		grp->append(new MSSetSoundMember(MSD_SE_OBJ_KAMOME_SOLO, nullptr, 60.0f));
-		grp->append(new MSSetSoundMember(MSD_SE_OBJ_KAMOME_SOLO, nullptr, 60.0f));
-		grp->append(new MSSetSoundMember(MSD_SE_OBJ_KAMOME_SOLO, nullptr, 60.0f));
+		grp->append(new MSSetSoundMember(MSD_SE_OBJ_KAMOME_SOLO_12, nullptr, 60.0f));
+		grp->append(new MSSetSoundMember(MSD_SE_OBJ_KAMOME_SOLO_13, nullptr, 60.0f));
+		grp->append(new MSSetSoundMember(MSD_SE_OBJ_KAMOME_SOLO_21, nullptr, 60.0f));
+		grp->append(new MSSetSoundMember(MSD_SE_OBJ_KAMOME_SOLO_22, nullptr, 60.0f));
+		grp->append(new MSSetSoundMember(MSD_SE_OBJ_KAMOME_SOLO_23, nullptr, 60.0f));
+		grp->append(new MSSetSoundMember(MSD_SE_OBJ_KAMOME_ENSB, nullptr, 60.0f));
+		grp->append(new MSSetSoundMember(MSD_SE_OBJ_KAMOME_ENSB_2, nullptr, 60.0f));
+		grp->append(new MSSetSoundMember(MSD_SE_OBJ_KAMOME_ENSB_3, nullptr, 60.0f));
 		// clang-format on
 	}
 }
@@ -480,7 +485,8 @@ JAISound* MSoundSE::startSoundSystemSE(u32 id, u32 param_2,
 
 static f32 vecLength(const Vec& vec)
 {
-	return std::sqrtf(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
+	return JGeometry::TUtil<f32>::sqrt(vec.x * vec.x + vec.y * vec.y
+	                                   + vec.z * vec.z);
 }
 
 void MSoundSE::startSoundActorWithInfo(u32 id, const Vec* position,
@@ -720,16 +726,17 @@ u32 MSoundSE::getNewIDByGroundCode(u32 id, JAIActor* actor)
 	if (ground & 0xf00)
 		return id;
 
+	u32 result = id;
 	switch (id) {
 	case MSD_SE_MA_WALK_STONE_L_HEEL:
 	case MSD_SE_MA_WALK_STONE_L_TIP:
 	case MSD_SE_MA_WALK_STONE_R_HEEL:
 	case MSD_SE_MA_WALK_STONE_R_TIP:
-		id += ground << 3 & 0x7f8;
+		result += ground << 3 & 0x7f8;
 		break;
 	}
 
-	return id;
+	return result;
 }
 
 u32 MSoundSE::getNewIDBySurfaceCode(u32 id, JAIActor* actor)

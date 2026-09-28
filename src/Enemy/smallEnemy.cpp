@@ -1,3 +1,7 @@
+// rogue include: the original TU opens .rodata with this dummy string
+// pair, ahead of every other string constant in the object.
+#include <System/DummyStrings.hpp>
+
 #include <Enemy/SmallEnemy.hpp>
 #include <Enemy/Graph.hpp>
 #include <Enemy/Conductor.hpp>
@@ -36,8 +40,6 @@
 // TODO: this definitely means that the no memory msg & zeros are from a
 // different header than mtx calc types
 
-static const char* dummyMactorStringValue1 = "\0\0\0\0\0\0\0\0\0\0\0";
-static const char* SMS_NO_MEMORY_MESSAGE   = "メモリが足りません\n";
 
 // NOTE: has to be here for proper rodata order
 #include <Map/MapCollisionEntry.hpp>
@@ -243,14 +245,16 @@ void TSmallEnemy::attackToMario()
 {
 	sendAttackMsgToMario();
 
-	// TODO: wtf
+	// NOTE: the zero Vec below is real: retail zeroes three stack slots
+	// (0x2c/0x30/0x34) here. Removing it regressed 87% -> 58%.
 	JGeometry::TVec3<f32> local_14(0, 0, 0);
 	(void)&local_14;
 
 	JGeometry::TVec3<f32> local_20;
 	local_20.sub(mPosition, SMS_GetMarioPos());
 	MsVECNormalize(&local_20, &local_20);
-	mVelocity.set(local_20);
+	mVelocity.x = local_20.x;
+	mVelocity.z = local_20.z;
 
 	JGeometry::TVec3<f32> v;
 	v.scale(mBodyScale * mBodyRadius, local_20);
@@ -718,7 +722,11 @@ bool TSmallEnemy::changeMove()
 		}
 	}
 
-	return 0;
+	// TODO: switch constants still off by one region (retail cmpwi 2/3/4
+	// vs ours); needs state-enum/case-order work. Tail fixed below.
+	if (mJuiceBlock->checkLiveFlag(LIVE_FLAG_DEAD))
+		return true;
+	return false;
 }
 
 void TSmallEnemy::scalingChangeActor()
@@ -741,7 +749,7 @@ void TSmallEnemy::changeOut()
 	                                nullptr, 0, 4);
 
 	kill();
-	mJuiceBlock->mPosition = mPosition;
+	mPosition = mJuiceBlock->mPosition;
 
 	gpMarioParticleManager->emitAndBindToPosPtr(0xCD, &mPosition, 0, nullptr);
 	getMActor()->setFrameRate(SMSGetAnmFrameRate(), ANM_TYPE_BCK);
@@ -927,6 +935,8 @@ void TSmallEnemy::behaveToHitOthers(THitActor* param_1)
 	if (!isCollidMove(param_1))
 		return;
 
+	// NOTE: declaration order result-then-local verified: swapping them
+	// regressed 91.8% -> 88.9%.
 	JGeometry::TVec3<f32> result(0.0f, 0.0f, 0.0f);
 
 	JGeometry::TVec3<f32> local_14;
@@ -1121,6 +1131,7 @@ DEFINE_NERVE(TNerveSmallEnemyChange, TLiveActor)
 		gpMarioParticleManager->emitAndBindToPosPtr(0xCD, &self->getPosition(),
 		                                            0, nullptr);
 	}
+	self->getMActor()->setFrameRate(0.0f, ANM_TYPE_BCK);
 	self->scalingChangeActor();
 	if (self->changeMove() || spine->getTime() > changeTime) {
 		self->changeOut();

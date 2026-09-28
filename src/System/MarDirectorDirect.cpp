@@ -466,8 +466,6 @@ void TMarDirector::currentStateFinalize(u8 next_state)
 
 		SMSGetApplication()->getFader()->startWipe(unkE4, 0.4f, 0.0f);
 		SMSRumbleMgr->reset();
-		if (SMSGetApplication()->mCurrArea.getStage() == 1)
-			THPPlayerPlay();
 		break;
 
 	case STATE_UNK1:
@@ -691,6 +689,8 @@ void TMarDirector::nextStateInitialize(u8 next_state)
 		}
 		if (mMap != 0xf)
 			getConsole()->unkC.off(CUE_MOVE | CUE_CALC_ANIM | CUE_DRAW);
+		if (currSeq.getStage() == 1)
+			THPPlayerPlay();
 		break;
 
 	case STATE_UNK4:
@@ -762,6 +762,15 @@ void TMarDirector::nextStateInitialize(u8 next_state)
 		unkAC->mCardSave->init(unk261);
 		for (int i = 0; i < 4; ++i)
 			JUTGamePad::CRumble::stopMotor(unk18[i]->mPortNum);
+		int cardSaveMode = unk261;
+		switch (cardSaveMode) {
+		case 3:
+		case 4:
+			if (gpMSound->gateCheck(0x4849))
+				MSoundSESystem::MSoundSE::startSoundSystemSE(0x4849, 0,
+				                                            nullptr, 0);
+			break;
+		}
 		unk18[0]->onFlag(TMarioGamePad::PAD_FLAG_MENU_INPUT);
 		break;
 
@@ -1141,8 +1150,8 @@ void TMarDirector::moveStage()
 		case 5:
 		case 6:
 		case 8:
-			unkE4 = 2;
-			unkB4 = TApplication::APP_STATE_BOOT;
+			unkE4 = 8;
+			unkB4 = TApplication::APP_STATE_TITLE;
 			break;
 
 		case 9:

@@ -1,3 +1,7 @@
+// rogue include: the original TU opens .rodata with this dummy string
+// pair, ahead of every other string constant in the object.
+#include <M3DUtil/InfectiousStrings.hpp>
+
 #include <Player/Mario.hpp>
 #include <Player/MarioAnimeData.hpp>
 #include <Player/MarioCap.hpp>
@@ -25,10 +29,8 @@
 #include <NPC/NpcBase.hpp>
 #include <math.h>
 
-// rogue includes needed for matching sinit & bss
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
-#include <M3DUtil/InfectiousStrings.hpp>
 
 TMario* gpMarioForCallBack;
 
@@ -526,7 +528,7 @@ static int MarioFootPosRCtrl(J3DNode* param_1, int param_2)
 	// volatile u32 padding[9];
 	if (param_2 == 0) {
 
-		BOOL check2;
+		BOOL check2 = FALSE;
 		bool check;
 
 		// Definitely some inline shenanigans
@@ -570,7 +572,7 @@ static int MarioFootDirRCtrl(J3DNode* param_1, int param_2)
 {
 	if (param_2 == 0) {
 
-		BOOL check2;
+		BOOL check2 = FALSE;
 		bool check;
 
 		// Definitely some inline shenanigans
@@ -650,7 +652,7 @@ static int MarioFootPosLCtrl(J3DNode* param_1, int param_2)
 	// volatile u32 padding[9];
 	if (param_2 == 0) {
 
-		BOOL check2;
+		BOOL check2 = FALSE;
 		bool check;
 
 		// Definitely some inline shenanigans
@@ -694,7 +696,7 @@ static int MarioFootDirLCtrl(J3DNode* param_1, int param_2)
 {
 	if (param_2 == 0) {
 
-		BOOL check2;
+		BOOL check2 = FALSE;
 		bool check;
 
 		// Definitely some inline shenanigans

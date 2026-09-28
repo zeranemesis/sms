@@ -1,3 +1,7 @@
+// rogue include: the original TU opens .rodata with this dummy string
+// pair, ahead of every other string constant in the object.
+#include <M3DUtil/InfectiousStrings.hpp>
+
 #include <Enemy/BossEel.hpp>
 #include <Enemy/Conductor.hpp>
 #include <Camera/Camera.hpp>
@@ -39,10 +43,8 @@
 #include <JSystem/JKernel/JKRFileLoader.hpp>
 #include <JSystem/JUtility/JUTTexture.hpp>
 
-// rogue includes needed for matching sinit & bss
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
-#include <M3DUtil/InfectiousStrings.hpp>
 
 f32 TBossEel::mOpenRollSpeed    = 0.3f;
 bool TBossEel::mUseObjCollision = true;
@@ -132,8 +134,6 @@ void TBEelTearsDrop::perform(u32 cue, JDrama::TGraphics* graphics)
 	}
 	mSharedParts->getMActor()->perform(cue, graphics);
 }
-
-void TBEelTearsDrop::generate(JGeometry::TVec3<f32>& position) { }
 
 TBEelTearsSaveLoadParams::TBEelTearsSaveLoadParams(const char* path)
     : TSpineEnemyParams(path)
@@ -480,8 +480,6 @@ void TBEelTears::setBubble()
 	mRecoverCollision->mColliding = true;
 }
 
-void TBEelTears::setRecoverTears() { }
-
 void TBEelTears::deadEffect()
 {
 	JPABaseEmitter* emitter = gpMarioParticleManager->emitAndBindToPosPtr(
@@ -804,6 +802,8 @@ TBossEelTooth::TBossEelTooth(u8 toothType, TBossEel* owner,
 
 void TBossEelTooth::changeToothAlpha(u8 alpha) { mColor.a = alpha; }
 
+void TBossEelTooth::updateTremble() { }
+
 BOOL TBossEelTooth::receiveMessage(THitActor* sender, u32 message)
 {
 	BOOL result = false;
@@ -862,8 +862,6 @@ BOOL TBossEelTooth::receiveMessage(THitActor* sender, u32 message)
 	}
 	return result;
 }
-
-void TBossEelTooth::updateTremble() { }
 
 void TBossEelTooth::perform(u32 cue, JDrama::TGraphics* graphics)
 {
@@ -1080,9 +1078,8 @@ TBossEelEye::TBossEelEye(const TLiveActor* owner, int jointIndex,
     , mBlurTimer(0)
     , mBlurDuration(50)
 {
-	// Frame-padding: target frame is 16 bytes larger (MWCC stack-padding quirk).
-	char framePad_16_TBossEelEye[16];
-	(void)framePad_16_TBossEelEye;
+	volatile u8 stackPad[16];
+	(void)stackPad;
 	mBlendModel = new SDLModel(modelData, modelFlags, 1);
 	mBlendModel->getModelData()->getMaterialName()->getIndex("_mat7");
 	getMActor()->initNormalMotionBlend();
@@ -1267,9 +1264,8 @@ TBossEelCollision::TBossEelCollision(MtxPtr collisionMtx, const char* name)
 
 void TBossEelCollision::perform(u32 cue, JDrama::TGraphics* graphics)
 {
-	// Frame-padding: target frame is 24 bytes larger (MWCC stack-padding quirk).
-	char framePad_24_perform[24];
-	(void)framePad_24_perform;
+	volatile u8 stackPad[24];
+	(void)stackPad;
 	if (cue & CUE_MOVE) {
 		calcEntryRadius();
 		for (s32 i = 0; i < mColCount; ++i) {
@@ -1387,6 +1383,8 @@ void TBossEelTearsRecoverCollision::behaveToMario()
 void TBossEelTearsRecoverCollision::perform(u32 cue,
                                             JDrama::TGraphics* graphics)
 {
+	volatile u8 stackPad[24];
+	(void)stackPad;
 	if (cue & CUE_MOVE) {
 		calcEntryRadius();
 		for (s32 i = 0; i < mColCount; ++i) {
@@ -1479,11 +1477,11 @@ void TBossEel::init(TLiveManager* manager)
 		    resource1,
 		    J3DMLF_MaterialPEFull | (16 << J3DMLF_TevStageNumShift)));
 		void* resource2   = JKRGetResource("/scene/bosseel/bad_tooth.bmd");
-		toothModelData[0] = new SDLModelData(J3DModelLoaderDataBase::load(
+		toothModelData[1] = new SDLModelData(J3DModelLoaderDataBase::load(
 		    resource2,
 		    J3DMLF_MaterialPEFull | (16 << J3DMLF_TevStageNumShift)));
 		void* resource3   = JKRGetResource("/scene/bosseel/gold_tooth.bmd");
-		toothModelData[0] = new SDLModelData(J3DModelLoaderDataBase::load(
+		toothModelData[2] = new SDLModelData(J3DModelLoaderDataBase::load(
 		    resource3,
 		    J3DMLF_MaterialPEFull | (16 << J3DMLF_TevStageNumShift)));
 
@@ -1627,8 +1625,6 @@ bool TBossEel::canEatMario()
 	return false;
 }
 
-BOOL TBossEel::isEyeBlurOn() { }
-
 void TBossEel::shedTears(MtxPtr spawnMtx)
 {
 	JGeometry::TVec3<f32> position(spawnMtx[0][3], spawnMtx[1][3],
@@ -1658,9 +1654,8 @@ void TBossEel::shedTears(MtxPtr spawnMtx)
 #pragma dont_inline on
 void TBossEel::forceShedTears(bool rearEyes)
 {
-	// Frame-padding: target frame is 48 bytes larger (MWCC stack-padding quirk).
-	char framePad_48_forceShedTears[48];
-	(void)framePad_48_forceShedTears;
+	volatile u8 stackPad[48];
+	(void)stackPad;
 	mTearEyeToggle = !mTearEyeToggle;
 	s32 eyeIndex;
 	if (!rearEyes) {
@@ -2013,7 +2008,8 @@ static s32 hoseiDiveCameraCallback(u32 actorAddress, u32 state)
 void TBossEel::startMoguCamera()
 {
 	if (!mMoguCameraActive) {
-		gpMarDirector->getConsole()->startAppearBalloon(0xE0015, true);
+		gpMarDirector->getConsole()->startAppearBalloon(
+		    VERSION_SELECT(GMSJ01(0xE0015), GMSP01(0x15)), true);
 		SMSGetMarDirector()->fireStartDemoCamera(
 		    "meoto_mogu_camera", &mPosition, -1, 0.0f, false,
 		    &hoseiDiveCameraCallback, reinterpret_cast<u32>(this), nullptr,
@@ -2031,7 +2027,8 @@ DEFINE_NERVE(TNerveBossEelWaitAppear, TLiveActor)
 		eel->setBckAnm(10);
 
 	if (spine->getTime() == 2500)
-		gpMarDirector->getConsole()->startAppearBalloon(0xE0012, true);
+		gpMarDirector->getConsole()->startAppearBalloon(
+		    VERSION_SELECT(GMSJ01(0xE0012), GMSP01(0x12)), true);
 
 	JGeometry::TVec3<f32> marioPosition = *gpMarioPos;
 	marioPosition.y += 75.0f;
@@ -2159,7 +2156,8 @@ DEFINE_NERVE(TNerveBossEelAppear, TLiveActor)
 		eel->mBarrierCollision->onHitFlag(HIT_FLAG_NO_COLLISION);
 		if (eel->mCollisionEnabled) {
 			eel->mCollisionEnabled = false;
-			gpMarDirector->getConsole()->startAppearBalloon(0xE0013, true);
+			gpMarDirector->getConsole()->startAppearBalloon(
+			    VERSION_SELECT(GMSJ01(0xE0013), GMSP01(0x13)), true);
 		}
 		return true;
 	}
@@ -2322,7 +2320,8 @@ DEFINE_NERVE(TNerveBossEelDie, TLiveActor)
 	if (spine->getTime() == 0) {
 		SMSGetMSound()->startSoundActor(MSD_SE_BS_UNG_VOICE_LAST,
 		                                &eel->mPosition, 0, nullptr, 0, 4);
-		gpMarDirector->getConsole()->startAppearBalloon(0xE0014, true);
+		gpMarDirector->getConsole()->startAppearBalloon(
+		    VERSION_SELECT(GMSJ01(0xE0014), GMSP01(0x14)), true);
 		MSBgm::stopTrackBGMs(7, 10);
 		gpCameraShake->startShake(CAM_SHAKE_MODE_UNK1E, 1.0f);
 		eel->setBckAnm(3);
@@ -2407,6 +2406,8 @@ DEFINE_NERVE(TNerveBossEelMouthOpenWait, TLiveActor)
 
 DEFINE_NERVE(TNerveBossEelSleepOnBottom, TLiveActor)
 {
+	volatile u8 stackPad[16];
+	(void)stackPad;
 	TBossEel* eel = static_cast<TBossEel*>(spine->getBody());
 
 	if (spine->getTime() == 0) {

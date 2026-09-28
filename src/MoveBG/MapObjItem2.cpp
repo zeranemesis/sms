@@ -1,3 +1,7 @@
+// rogue include: the original TU opens .rodata with this dummy string
+// pair, ahead of every other string constant in the object.
+#include <M3DUtil/InfectiousStrings.hpp>
+
 #include <MoveBG/MapObjItem2.hpp>
 #include <M3DUtil/MActor.hpp>
 #include <Map/Map.hpp>
@@ -14,10 +18,8 @@
 #include <JSystem/JParticle/JPAEmitter.hpp>
 #include <JSystem/J3D/J3DGraphAnimator/J3DAnimation.hpp>
 
-// rogue includes needed for matching sinit & bss
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
-#include <M3DUtil/InfectiousStrings.hpp>
 
 TMushroom1up::TMushroom1up(int param_1, const char* name)
     : TMapObjBase(name)
@@ -44,9 +46,8 @@ void TMushroom1up::touchPlayer(THitActor* param_1)
 
 void TMushroom1up::makeObjAppeared()
 {
-	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
-	char framePad_8_makeObjAppeared[8];
-	(void)framePad_8_makeObjAppeared;
+	volatile u8 stackPad[8];
+	(void)stackPad;
 	TMapObjBase::makeObjAppeared();
 	mStateTimer = 1200;
 	unk138      = 0;
@@ -147,9 +148,8 @@ void TMushroom1up::control()
 
 void TMushroom1up::perform(u32 cue, JDrama::TGraphics* graphics)
 {
-	// Frame-padding: target frame is 24 bytes larger (MWCC stack-padding quirk).
-	char framePad_24_perform[24];
-	(void)framePad_24_perform;
+	volatile u8 stackPad[24];
+	(void)stackPad;
 	if (unk139 != 2 && mStateTimer < 240 && (cue & CUE_ENTRY)
 	    && gpMarDirector->mMoveTickCount % 6 > 2)
 		cue &= ~CUE_ENTRY;
@@ -168,9 +168,8 @@ TJumpBase::TJumpBase(const char* name)
 
 void TJumpBase::initMapObj()
 {
-	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
-	char framePad_8_initMapObj[8];
-	(void)framePad_8_initMapObj;
+	volatile u8 stackPad[8];
+	(void)stackPad;
 	TMapObjBase::initMapObj();
 	if (mMapCollisionManager) {
 		TMapCollisionBase* base = mMapCollisionManager->unk8;

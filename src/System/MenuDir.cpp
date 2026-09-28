@@ -52,8 +52,8 @@ TMenuDirector::~TMenuDirector()
 
 void* TMenuDirector::setupThreadFunc(void* param_1)
 {
-	// BUG: return missing
-	((TMenuDirector*)param_1)->rsetup();
+	return reinterpret_cast<void*>(
+	    (u32)((TMenuDirector*)param_1)->rsetup());
 }
 
 extern OSThread gSetupThread;
@@ -175,7 +175,7 @@ int TMenuDirector::direct()
 		void* res;
 		OSJoinThread(&gSetupThread, &res);
 		SMSGetApplication()->getFader()->startFadeinT(0.25f);
-		if (TFlagManager::getInstance()->getBool(0x30007)) {
+		if (!TFlagManager::getInstance()->getBool(0x30007)) {
 			TFlagManager::getInstance()->setBool(true, 0x30007);
 			gpMSound->loadWave(MS_WAVE_UNK128);
 		}

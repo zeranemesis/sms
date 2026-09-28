@@ -251,11 +251,10 @@ BOOL TMario::warpIn()
 
 bool TMario::isUnUsualStageStart()
 {
-	// Frame-padding: target frame is 40 bytes larger (MWCC stack-padding quirk).
-	char framePad_40_isUnUsualStageStart[40];
-	(void)framePad_40_isUnUsualStageStart;
-	// Missing stack space
-	// volatile u32 padding[14];
+	// Keep MWCC's frame at the 0x50 bytes used by the retail function. This is
+	// code-generation padding only; it has no gameplay role.
+	volatile u32 stackPadding[10];
+	(void)stackPadding;
 
 	// Pinna rollercoaster
 	if ((gpMarDirector->getCurrentMap() == 0x3A)
@@ -473,7 +472,7 @@ BOOL TMario::electricDamage()
 		           mDmgParamsGraffitoElec.mMinSpeed.get(),
 		           mDmgParamsGraffitoElec.mMotor.get(), 0.0f, 0x3C);
 
-		return changePlayerStatus(MARIO_STATUS_WAIT, 0, true);
+		return changePlayerStatus(MARIO_STATUS_ROCKET_LANDING, 0, true);
 	}
 	return false;
 }

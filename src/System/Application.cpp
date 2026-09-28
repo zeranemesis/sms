@@ -97,6 +97,26 @@ f32 SMSGetRealVSyncTimesPerSec()
 f32 SMSGetVSyncTimesPerSec() { return SMSGetRealVSyncTimesPerSec() / 2.0f; }
 #else
 
+// Retail keeps an out-of-line call in SMSGetAnmFrameRate, so prevent
+// inlining here (initialize already calls out-of-line).
+#pragma dont_inline on
+f32 SMSGetRealVSyncTimesPerSec()
+{
+	f32 result = 60.0f;
+	switch (VIGetTvFormat()) {
+	case VI_MPAL:
+	case VI_NTSC:
+	case VI_EURGB60:
+		result = 60.0f;
+		break;
+	case VI_PAL:
+		result = 50.0f;
+		break;
+	}
+	return result;
+}
+#pragma dont_inline off
+
 f32 SMSGetVSyncTimesPerSec()
 {
 	f32 result = 60.0f;
@@ -239,7 +259,7 @@ void TApplication::initialize()
 	GXInit(JKRAllocFromHeap(nullptr, 0x80000, 0x20), 0x80000);
 	SMS_ResetTexCacheRegion();
 	GXPokeAlphaRead(GX_READ_NONE);
-	void* pvVar3 = new (0x20) u8[0xa5000];
+	void* pvVar3 = new (0x20) u8[0xa5a00];
 	GXRenderModeObj rmode;
 	SMSSetupTitleRenderMode(&rmode);
 	mDisplay = new JDrama::TDisplay(2, pvVar3, pvVar3, rmode);

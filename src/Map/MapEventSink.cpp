@@ -1,3 +1,7 @@
+// rogue include: the original TU opens .rodata with this dummy string
+// pair, ahead of every other string constant in the object.
+#include <M3DUtil/InfectiousStrings.hpp>
+
 #include <Map/MapEventSink.hpp>
 #include <Map/PollutionManager.hpp>
 #include <Map/MapCollisionEntry.hpp>
@@ -20,10 +24,8 @@
 #include <JSystem/JParticle/JPAResourceManager.hpp>
 #include <Jsystem/JDrama/JDRNameRefGen.hpp>
 
-// rogue includes needed for matching sinit & bss
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
-#include <M3DUtil/InfectiousStrings.hpp>
 
 u32 TMapEventSink::mCleanedDegree = 10;
 
@@ -349,6 +351,8 @@ void TMapEventSinkBianco::startControl()
 	if (mRaisingBuildingIdx == 0) {
 		SMS_ShowJoint(unk64->getMesh(), true);
 		SMS_MarioWarpRequest(unk6C, unk78);
+		SMSGetMSound()->startSoundSystemSE(MSD_SE_SY_CLEAR_SIGN_BIG, 0,
+		                                  nullptr, 0);
 		unk50[mRaisingBuildingIdx].set(7170.0f, 3675.0f, -185.0f);
 		SMSGetMarDirector()->fireStartDemoCamera(
 		    "bianco0_event0", nullptr, -1, 0.0f, true, nullptr, 0, nullptr,
@@ -382,7 +386,18 @@ bool TMapEventSinkBianco::watch()
 
 void TMapEventSinkBianco::loadAfter()
 {
-	TMapEventSinkInPollutionReset::loadAfter();
+	JDrama::TNameRef::loadAfter();
+	for (int i = 0; i < mBuildingNum; ++i) {
+		TPollutionObj* obj
+		    = gpPollution->getLayer(unk60[i].unk0)->getObj(unk60[i].unk2);
+		gpPollution->getCounterObj().registerPollutionObj(obj, &obj->mCounter);
+	}
+	for (int i = 0; i < mBuildingNum; ++i) {
+		gpPollution->getLayer(unk60[i].unk0)->getObj(unk60[i].unk2)->alive();
+		gpPollution->getLayer(unk60[i].unk0)
+		    ->getObj(unk60[i].unk2 + 1)
+		    ->kill();
+	}
 
 	TMapStaticObj* ref
 	    = static_cast<TMapStaticObj*>(JDrama::TNameRefGen::search("鏡内地形"));

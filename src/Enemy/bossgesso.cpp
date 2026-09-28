@@ -40,6 +40,10 @@
 #include <MSound/MSoundBGM.hpp>
 #include <M3DUtil/InfectiousStrings.hpp>
 
+// Force emission of weak inline functions that appear in the original binary
+static MActorAnmData* (TMActorKeeper::*force_emit_getMActorAnmData)() const = &TMActorKeeper::getMActorAnmData;
+static JGeometry::TVec3<f32>& (*force_emit_SMS_GetMarioPos)() = &SMS_GetMarioPos;
+
 const char* bgeso_bastable[] = {
 	nullptr,
 	"/scene/bgeso/bas/bgeso_cannon.bas",
@@ -190,7 +194,7 @@ BOOL TBGBeakHit::receiveMessage(THitActor* sender, u32 message)
 			mHolder = actor;
 
 			if (mOwner->unk190.color.a != 0)
-				mOwner->showMessage(0xE0028);
+				mOwner->showMessage(0x25);
 
 			return true;
 		}
@@ -648,7 +652,7 @@ void TBossGesso::rumblePad(int param_1, const JGeometry::TVec3<f32>& param_2)
 	if (!SMS_IsMarioTouchGround4cm())
 		return;
 
-	JGeometry::TVec3<f32> delta = SMS_GetMarioPos();
+	JGeometry::TVec3<f32> delta = *gpMarioPos;
 	delta -= param_2;
 	f32 fVar2 = delta.length();
 	f32 fVar1 = (3000.0f - fVar2) / 1000.0f;
@@ -699,8 +703,19 @@ f32 TBossGesso::lenFromToeToMario()
 
 void TBossGesso::showMessage(u32 param_1)
 {
-	u32 idx  = param_1 == 0xE0028 ? 3 : param_1 - 0xE0003;
-	u32 flag = param_1 == 0xE0003 ? 0 : 1 << idx;
+	u32 idx;
+	if (param_1 == 0x25) {
+		idx = 3;
+	} else {
+		idx = param_1 - 3;
+	}
+
+	u32 flag;
+	if (param_1 == 3) {
+		flag = 0;
+	} else {
+		flag = 1 << idx;
+	}
 
 	if ((unk198 & flag) == 0)
 		gpMarDirector->getConsole()->startAppearBalloon(param_1, true);
@@ -809,6 +824,8 @@ void TBossGesso::gotTentacleDamage()
 	mSpine->reset();
 	mSpine->setNext(&TNerveBGTentacleDamage::theNerve());
 	mSpine->pushAfterCurrent(&TNerveBGWait::theNerve());
+
+	unk1A0 = 1;
 }
 
 void TBossGesso::gotEyeDamage()
@@ -1090,7 +1107,7 @@ void TBossGesso::doAttackShoot()
 	}
 
 	if (inSightAngle(getSaveParam()->mSLSightAngle.get() * 0.5f)) {
-		JGeometry::TVec3<f32> delta = SMS_GetMarioPos();
+		JGeometry::TVec3<f32> delta = *gpMarioPos;
 		delta -= mPosition;
 
 		f32 singleAttackLen = getSaveParam()->mSLSingleAttackLen.get();
@@ -1269,7 +1286,7 @@ void TBossGesso::perform(u32 cue, JDrama::TGraphics* graphics)
 			if (toMario.squared() < 4000000.0f) {
 				unk19C++;
 				if (unk19C >= 1200) {
-					showMessage(0xE0004);
+					showMessage(4);
 					unk1A0 = 1;
 				}
 			}
@@ -1429,7 +1446,8 @@ void TBossGesso::perform(u32 cue, JDrama::TGraphics* graphics)
 
 			if (!((left == 4 || left == 6 || left == 3)
 			      && (right == 4 || right == 6 || right == 3))) {
-				gpMarDirector->mConsole->startAppearBalloon(0xE0003, true);
+				gpMarDirector->mConsole->startAppearBalloon(
+				    VERSION_SELECT(GMSJ01(0xE0003), GMSP01(0x03)), true);
 			}
 		}
 	}
@@ -1512,7 +1530,7 @@ DEFINE_NERVE(TNerveBGWait, TLiveActor)
 		self->getMActor()->resetDL();
 	}
 
-	JGeometry::TVec3<f32> delta = SMS_GetMarioPos();
+	JGeometry::TVec3<f32> delta = *gpMarioPos;
 	delta -= self->mPosition;
 	f32 len   = delta.length();
 	f32 fVar2 = len > 800.0f ? 1.0f : 3000.0f / len;
@@ -1718,7 +1736,7 @@ DEFINE_NERVE(TNerveBGTug, TLiveActor)
 	    BGESO_JPA_MS_BOGE_NAMIDA, self->getModel()->getAnmMtx(4), 0, nullptr);
 
 	if (self->mBeak->mHolder != nullptr) {
-		JGeometry::TVec3<f32> delta = SMS_GetMarioPos();
+		JGeometry::TVec3<f32> delta = *gpMarioPos;
 		delta -= self->mPosition;
 		f32 lim = self->getSaveParam()->mSLBeakLengthDamage.get();
 

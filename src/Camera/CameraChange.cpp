@@ -449,9 +449,8 @@ void CPolarSubCamera::changeCamModeSpecifyCamMapToolAndFrame_(
 
 void CPolarSubCamera::execFrontRotate_()
 {
-	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
-	char framePad_8_execFrontRotate_[8];
-	(void)framePad_8_execFrontRotate_;
+	volatile u8 stackPad[8];
+	(void)stackPad;
 	(void)0;
 	(void)0;
 	(void)0;

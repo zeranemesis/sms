@@ -16,6 +16,7 @@ extern TTalk2D2* gpTalk2D;
 class TTalk2D2 : public JDrama::TViewObj {
 public:
 	TTalk2D2(const char* name = "<TTalk2D2>");
+	virtual ~TTalk2D2();
 
 	virtual void load(JSUMemoryInputStream&);
 	virtual void loadAfter();
@@ -49,7 +50,9 @@ public:
 	s8 getSelectedValue() const { return unk214; }
 
 public:
-	/* 0x10 */ char unk10[0x214 - 0x10];
+	/* 0x10 */ char unk10[0x28 - 0x10];
+	/* 0x28 */ bool unk28; // TODO: unclear meaning, gates a talkModeOut/startSoundSystemSE branch in forceCloseTalk
+	/* 0x29 */ char unk29[0x214 - 0x29];
 	/* 0x214 */ s8 unk214; // the line the player selected in a choice window
 	/* 0x215 */ char unk215[0x248 - 0x215];
 	/* 0x248 */ u32 unk248; // talk mode

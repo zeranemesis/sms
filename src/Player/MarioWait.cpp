@@ -76,8 +76,6 @@ BOOL TMario::canPut()
 	return 1;
 }
 
-void TMario::checkPutStart() { }
-
 BOOL TMario::waitingCommonEvents()
 {
 	if (mInput & 0x2) {
@@ -231,9 +229,9 @@ BOOL TMario::sleeping()
 	if ((mInput & 0xa41f) || unk108->mAnalogR > 0.0f
 	    || unk108->mAnalogL > 0.0f) {
 		if (mStatusState == 0)
-			startSoundActor(MSD_SE_MV12_REACT_03);
+			startVoice(MSD_SE_MV12_REACT_03);
 		else
-			startSoundActor(MSD_SE_MV17_EXERT_REACT_02);
+			startVoice(MSD_SE_MV17_EXERT_REACT_02);
 		return changePlayerStatus(MARIO_STATUS_WAKEUP, mStatusState, false);
 	}
 
@@ -567,7 +565,7 @@ BOOL TMario::waitMain()
 	int result = 0;
 
 	checkEnforceJump();
-	checkCollision();
+	checkReturn();
 	setNormalAttackArea();
 
 	if (mHeldObject != nullptr && (mInput & 0x2000 ? true : false)) {

@@ -31,9 +31,8 @@ TRailMapObj::TRailMapObj(const char* name)
 // TODO: weird stack frame issues here D:
 void TRailMapObj::initGraphTracer(TGraphWeb* graph)
 {
-	// Frame-padding: target frame is 16 bytes larger (MWCC stack-padding quirk).
-	char framePad_16_initGraphTracer[16];
-	(void)framePad_16_initGraphTracer;
+	volatile u8 stackPad[16];
+	(void)stackPad;
 	unk138 = new TGraphTracer;
 
 	unk138->unk0 = graph;
@@ -167,9 +166,8 @@ BOOL TRailMapObj::calcRecycle()
 
 void TRailMapObj::resetPosition()
 {
-	// Frame-padding: target frame is 16 bytes larger (MWCC stack-padding quirk).
-	char framePad_16_resetPosition[16];
-	(void)framePad_16_resetPosition;
+	volatile u8 stackPad[16];
+	(void)stackPad;
 	mPosition = mInitialPosition;
 	mRotation = mInitialRotation;
 	unk148    = 0;
@@ -287,7 +285,7 @@ void TNormalLift::readRailFlag()
 	if (!unk138->unk0)
 		return;
 
-	if (!graph->isDummy())
+	if (graph->isDummy())
 		return;
 
 	TRailNode* railNode = graph->getCurrentNode().getRailNode();
@@ -546,9 +544,8 @@ TWoodBlock::TWoodBlock(const char* name)
 
 BOOL TWoodBlock::calcRecycle()
 {
-	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
-	char framePad_8_calcRecycle[8];
-	(void)framePad_8_calcRecycle;
+	volatile u8 stackPad[8];
+	(void)stackPad;
 	switch (unk148) {
 	case 0:
 		unk14C = 1;

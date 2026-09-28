@@ -58,9 +58,8 @@ JUTPoint TGCConsole2::cCoinBotPoint(0, 0);
 
 // fabricated
 static inline void setEmitterToPaneCenter(JPABaseEmitter* emitter,
-                                          J2DPane* pane)
+                                          const JUTRect& bounds)
 {
-	JUTRect bounds(pane->mGlobalBounds);
 	emitter->mGlobalTranslation.set(bounds.x1 + bounds.getWidth() * 0.5f,
 	                                bounds.y1 + bounds.getHeight() * 0.5f,
 	                                0.0f);
@@ -122,9 +121,9 @@ static inline bool isMountedYoshi(TMario* mario)
 // fabricated
 static inline void updateWaterGaugeFill(TGCConsole2* console)
 {
-	TMario* mario       = gpMarioOriginal;
-	TWaterGun* waterGun = mario->mWaterGun;
-	TNozzleBase* nozzle = waterGun->getCurrentNozzle();
+	TMario* mario             = gpMarioOriginal;
+	const TWaterGun* waterGun = mario->mWaterGun;
+	TNozzleBase* nozzle       = waterGun->getCurrentNozzle();
 	s32 currentWater    = waterGun->mCurrentWater;
 	s32 maxWater        = nozzle->mEmitParams.mAmountMax.get();
 	u8 currentNozzle    = waterGun->mCurrentNozzle;
@@ -392,6 +391,60 @@ static inline void playLifeChangeSound(u32 sound)
 }
 
 // fabricated
+// TODO: same guard as playLifeChangeSound, but the target picks the sound id
+// from the air mode *inside* the guard (a `playLifeChangeSound(airMode ?
+// 0x480C : 0x4823)` argument would be evaluated before it).
+static inline void playLifeChangeSoundByMode(bool airMode)
+{
+	if (gpMarDirector->mState == TMarDirector::STATE_UNK4
+	    && gpMarDirector->unk124 == 0) {
+		if (airMode)
+			SMSGetMSound()->startSoundSystemSE(0x480c, 0, nullptr, 0);
+		else
+			SMSGetMSound()->startSoundSystemSE(0x4823, 0, nullptr, 0);
+	}
+}
+
+// fabricated
+// TODO: the target keeps the nested JUtility::TColor::set calls out-of-line
+// (bl set__Q28JUtility6TColorFUcUcUcUc), which only happens one inline level
+// deeper than a direct expansion (see AGENT_MATCHING_TIPS inline ladder:
+// pass 3 permits callees of at most 3 statements, and set() has 4).
+// Splitting the colour block into these two small helpers buys that level.
+static inline void updateLifeMeterPaneColorsHigh(TGCConsole2* console,
+                                                  bool airMode)
+{
+	if (airMode) {
+		((J2DPicture*)console->unk178->getPane())->mWhite =
+		    JUtility::TColor(0, 0xff, 0xff, 0xff);
+		((J2DPicture*)console->unk17C[0])->mWhite =
+		    JUtility::TColor(0, 0xff, 0xff, 0xff);
+	} else {
+		((J2DPicture*)console->unk178->getPane())->mWhite =
+		    JUtility::TColor(0xff, 0xff, 0xff, 0xff);
+		((J2DPicture*)console->unk17C[0])->mWhite =
+		    JUtility::TColor(0xff, 0xff, 0xff, 0xff);
+	}
+}
+
+// fabricated (see updateLifeMeterPaneColorsHigh)
+static inline void updateLifeMeterPaneColorsLow(TGCConsole2* console,
+                                                bool airMode)
+{
+	if (airMode) {
+		((J2DPicture*)console->unk178->getPane())->mWhite =
+		    JUtility::TColor(0, 0xa0, 0xff, 0xff);
+		((J2DPicture*)console->unk17C[0])->mWhite =
+		    JUtility::TColor(0, 0x80, 0x80, 0xff);
+	} else {
+		((J2DPicture*)console->unk178->getPane())->mWhite =
+		    JUtility::TColor(0x80, 0x80, 0x80, 0xff);
+		((J2DPicture*)console->unk17C[0])->mWhite =
+		    JUtility::TColor(0x80, 0x80, 0x80, 0xff);
+	}
+}
+
+// fabricated
 static inline void updateLifeMeterState(TGCConsole2* console)
 {
 	u8 amount;
@@ -403,6 +456,7 @@ static inline void updateLifeMeterState(TGCConsole2* console)
 	case 2:
 	case 3:
 	case 7:
+	case 10:
 		airMode = false;
 		amount  = gpMarioOriginal->mHealth;
 		break;
@@ -575,7 +629,8 @@ static inline void updateLifeMeterState(TGCConsole2* console)
 			++console->unk1CC[0];
 			console->unk17C[console->unk1CC[0] * 2]->show();
 			playLifeChangeSound(0x4801);
-		} else if (console->unk1CC[0] > 0) {
+		} else if (console->unk1CC[0] != amount) {
+			playLifeChangeSoundByMode(airMode);
 			console->unk17C[console->unk1CC[0] * 2]->hide();
 			console->unk17C[console->unk1CC[0] * 2]->setBounds(
 			    JUTRect(console->unk1D0[console->unk1CC[0]].x1,
@@ -588,34 +643,21 @@ static inline void updateLifeMeterState(TGCConsole2* console)
 			            console->unk1D0[console->unk1CC[0]].x2,
 			            console->unk1D0[console->unk1CC[0]].y2));
 			--console->unk1CC[0];
-			playLifeChangeSound(0x4823);
+			if (console->unk1CC[0] == 0) {
+				console->unk17C[0]->hide();
+				console->unk17C[0]->setBounds(
+				    JUTRect(console->unk1D0[0].x1, console->unk1D0[0].y1,
+				            console->unk1D0[0].x2, console->unk1D0[0].y2));
+				console->unk17C[1]->setBounds(
+				    JUTRect(console->unk1D0[0].x1, console->unk1D0[0].y1,
+				            console->unk1D0[0].x2, console->unk1D0[0].y2));
+			}
 		}
 		console->unk1C = console->unk1CC[0];
-		if (console->unk1CC[0] >= 4) {
-			if (airMode) {
-				((J2DPicture*)console->unk178->getPane())->mWhite = 0x00FFFFFF;
-				((J2DPicture*)console->unk178->getPane())->mBlack = 0x003CFF00;
-				((J2DPicture*)console->unk17C[0])->mWhite         = 0x00FFFFFF;
-				((J2DPicture*)console->unk17C[0])->mBlack         = 0x003CFF00;
-			} else {
-				((J2DPicture*)console->unk178->getPane())->mWhite = 0xFFFFFFFF;
-				((J2DPicture*)console->unk178->getPane())->mBlack = 0;
-				((J2DPicture*)console->unk17C[0])->mWhite         = 0xFFFFFFFF;
-				((J2DPicture*)console->unk17C[0])->mBlack         = 0;
-			}
-		} else {
-			if (airMode) {
-				((J2DPicture*)console->unk178->getPane())->mWhite = 0x0010FFFF;
-				((J2DPicture*)console->unk178->getPane())->mBlack = 0x003CFF00;
-				((J2DPicture*)console->unk17C[0])->mWhite         = 0x0010FFFF;
-				((J2DPicture*)console->unk17C[0])->mBlack         = 0x003CFF00;
-			} else {
-				((J2DPicture*)console->unk178->getPane())->mWhite = 0x7F7F7FFF;
-				((J2DPicture*)console->unk178->getPane())->mBlack = 0;
-				((J2DPicture*)console->unk17C[0])->mWhite         = 0x7F7F7FFF;
-				((J2DPicture*)console->unk17C[0])->mBlack         = 0;
-			}
-		}
+		if (console->unk1CC[0] >= 4)
+			updateLifeMeterPaneColorsHigh(console, airMode);
+		else
+			updateLifeMeterPaneColorsLow(console, airMode);
 	}
 }
 
@@ -921,6 +963,9 @@ static inline void updateJetCounterAnimation(TGCConsole2* console)
 }
 
 // fabricated
+// TODO: the target keeps this inline *inside* updateCounterState's else branch;
+// calling a separate helper from there exceeds MWCC's inline statement budget
+// one level below perform, so the body is spelled out there instead.
 static inline void updateCounterState(TGCConsole2* console)
 {
 	TFlagManager* flags = TFlagManager::smInstance;
@@ -937,147 +982,41 @@ static inline void updateCounterState(TGCConsole2* console)
 		console->unk20 = coins;
 	}
 
-	bool waitForStarHud
-	    = gpMarioOriginal->mStatus == 0xC400201
-	      && gpMarDirector->mState != TMarDirector::STATE_PAUSE_MENU
-	      && !console->unk50 && !console->unk140->isInterpolatorAtZero();
-	if (waitForStarHud) {
-		++console->unk30;
-		if (console->unk30 > 0xc8) {
-			console->startAppearStar();
-			console->startAppearMario(false);
-			console->unk70 = 0xffff;
-			console->unk59 = 0;
-			console->unk30 = 0;
+	if (gpMarioOriginal->mStatus == 0xC400201
+	    && gpMarDirector->mState != TMarDirector::STATE_PAUSE_MENU
+	    && !console->unk50) {
+		if (!console->unk140->isInterpolatorAtZero()) {
+			++console->unk30;
+			if (console->unk30 > 0xc8) {
+				console->startAppearStar();
+				console->startAppearMario(false);
+				console->unk70 = 0xffff;
+				console->unk59 = 0;
+				console->unk30 = 0;
+			}
 		}
 	} else {
 		console->unk30 = 0;
+
+		if (console->unk34)
+			return;
+		if (!console->unk140->isInterpolatorAtZero())
+			return;
+		if (console->unk60)
+			return;
+		if (gpMarDirector->mState == TMarDirector::STATE_PAUSE_MENU
+		    || gpMarDirector->mState == TMarDirector::STATE_CARD_SAVE)
+			return;
+		if (console->unk50 || console->unk16C != 0 || console->unk8A != 0)
+			return;
+		if (gpMarDirector->unk124 == 2)
+			return;
+
+		console->startDisappearStar();
+		if (console->unk3A8->getPane()->isVisible() && !console->unk3B)
+			console->startDisappearMario();
+		console->unk5A = 0;
 	}
-
-	int blueTotal = flags->getFlag(0x40001);
-	if ((int)console->unk168 != blueTotal) {
-		++console->unk168;
-
-		int spentBlueCoins = 0;
-		for (int flag = 0x46; flag < 0x56; ++flag)
-			if (TFlagManager::smInstance->getFlag(0x10000 + flag) != 0)
-				++spentBlueCoins;
-
-		for (int flag = 0x6C; flag <= 0x73; ++flag)
-			if (TFlagManager::smInstance->getFlag(0x10000 + flag) != 0)
-				++spentBlueCoins;
-		int blueValue = console->unk168 - spentBlueCoins * 10;
-		if (blueValue < 0)
-			blueValue = 0;
-
-		setBlueCoinDigits(console->unk154, console->unkE0, blueValue);
-		if (console->unk160->getPane()->isVisible()) {
-			emitCounterParticle(console->unk154[1]);
-			if (blueValue % 10 == 0)
-				emitCounterParticle(console->unk154[0]);
-		} else {
-			console->startAppearStar();
-		}
-		console->unk170 = blueValue;
-		console->unk16C = 1;
-	}
-
-	if (console->unk16C != 0) {
-		++console->unk16C;
-		if (console->unk16C > 0x190)
-			console->unk16C = 0;
-	}
-
-	int shines = flags->getFlag(0x40000);
-	if (console->unk8A == 0 && (int)console->unk64 != shines)
-		console->unk8A = 1;
-
-	if (console->unk8A != 0) {
-		if (console->unk8A > 0xFB) {
-			int spentBlueCoins = 0;
-			for (int flag = 0x46; flag < 0x56; ++flag)
-				if (TFlagManager::smInstance->getFlag(0x10000 + flag) != 0)
-					++spentBlueCoins;
-
-			for (int flag = 0x6C; flag <= 0x73; ++flag)
-				if (TFlagManager::smInstance->getFlag(0x10000 + flag) != 0)
-					++spentBlueCoins;
-			int target = blueTotal - spentBlueCoins * 10;
-			if (console->unk170 != target) {
-				--console->unk170;
-				if (console->unk170 < 0) {
-					console->unk170 = 0;
-				} else if (SMSGetMSound()->gateCheck(0x4850)) {
-					MSoundSESystem::MSoundSE::startSoundSystemSE(0x4850, 0,
-					                                             nullptr, 0);
-				}
-				setBlueCoinDigits(console->unk154, console->unkE0,
-				                  console->unk170);
-			}
-		}
-
-		if (console->unk8A == 0xFC) {
-			int value = console->unk64;
-
-			if (value < 100) {
-				console->unk134[2]->getPane()->hide();
-
-				if (value % 10 == 0)
-					setBlendDigit(console->unk134[0], console->unkE0,
-					              value / 10);
-
-				setBlendDigit(console->unk134[1], console->unkE0, value % 10);
-			} else {
-				int hundreds = value / 100;
-				if (value % 100 == 0) {
-					setBlendDigit(console->unk134[0], console->unkE0, hundreds);
-					console->unk134[0]->getPane()->show();
-				}
-
-				value -= hundreds * 100;
-				if (value % 10 == 0)
-					setBlendDigit(console->unk134[1], console->unkE0,
-					              value / 10);
-
-				console->unk134[2]->getPane()->show();
-				setBlendDigit(console->unk134[2], console->unkE0, value % 10);
-			}
-		} else if (console->unk8A == 0x106) {
-			if (shines > (int)console->unk64) {
-				++console->unk64;
-				console->unk8A = 0xFB;
-			}
-		} else if (!console->unk34 && !console->unk35) {
-			console->unk134[0]->update();
-			console->unk134[1]->update();
-			console->unk134[2]->update();
-		}
-
-		++console->unk8A;
-	}
-}
-
-// fabricated
-static inline void updateStarHudAutoHide(TGCConsole2* console)
-{
-	if (console->unk34)
-		return;
-	if (!console->unk140->isInterpolatorAtZero())
-		return;
-	if (console->unk60)
-		return;
-	if (gpMarDirector->mState == TMarDirector::STATE_PAUSE_MENU
-	    || gpMarDirector->mState == TMarDirector::STATE_CARD_SAVE)
-		return;
-	if (console->unk50 || console->unk16C != 0 || console->unk8A != 0)
-		return;
-	if (gpMarDirector->unk124 == 2)
-		return;
-
-	console->startDisappearStar();
-	if (console->unk3A8->getPane()->isVisible() && !console->unk3B)
-		console->startDisappearMario();
-	console->unk5A = 0;
 }
 
 // fabricated
@@ -1285,7 +1224,6 @@ static inline void updateJetAppearState(TGCConsole2* console)
 {
 	if (console->unk3D && console->processAppearJet(console->unk72++)) {
 		console->unk3D = 0;
-		console->unk72 = 0;
 	}
 }
 
@@ -1294,7 +1232,6 @@ static inline void updateRedCoinAppearState(TGCConsole2* console)
 {
 	if (console->unk3C && console->processAppearRed(console->unk74++)) {
 		console->unk3C = 0;
-		console->unk74 = 0;
 	}
 }
 
@@ -1303,17 +1240,14 @@ static inline void updateTimerAppearState(TGCConsole2* console)
 {
 	if (console->unk3E && console->processAppearTimer(console->unk76++)) {
 		console->unk3E = 0;
-		console->unk76 = 0;
 	}
 }
 
 // fabricated
 static inline void updateTelopState(TGCConsole2* console, u32 flags)
 {
-	if (console->unk3F && console->unk44C->update()) {
-		console->unk44C->getPane()->hide();
-		console->unk3F = 0;
-	}
+	// TODO: the `unk3F && unk44C->update()` block that used to live here is
+	// emitted by the original after the timer block in perform() instead.
 
 	if (console->unk42) {
 		if (console->unk520->update()) {
@@ -1329,10 +1263,11 @@ static inline void updateTelopState(TGCConsole2* console, u32 flags)
 	if (console->unk44 && console->unk520->getPane()->isVisible()) {
 		++console->unk80;
 		if (console->processDrawTelop(flags)) {
-			console->unk534 = console->unk524->getPane()->mBounds;
+			// TODO: this looks like a local copy of the pane bounds in the
+			// original (JUTRect::copy to a stack temp), not a member store.
+			JUTRect bounds(console->unk524->getPane()->mBounds);
 			console->unk568 = console->unk544.x2;
-			console->unk534.add(console->mTelopTextWidth + console->unk534.x2,
-			                    0);
+			console->unk534.add(console->mTelopTextWidth + bounds.x2, 0);
 
 			if (console->unk56D) {
 				console->unk56D = 0;
@@ -1444,11 +1379,8 @@ static inline void updateMarioAppearState(TGCConsole2* console)
 		if (++console->unk70 > 0x190)
 			console->startDisappearMario();
 	}
-
-	if (console->unk3B && console->unk3A8->update()) {
-		console->unk3B = 0;
-		console->unk3A8->getPane()->hide();
-	}
+	// TODO: the `unk3B && unk3A8->update()` block is emitted by the original
+	// in perform() after updateMarioLifeCounter(), see there.
 }
 
 // fabricated
@@ -1527,14 +1459,53 @@ static u32 scDolpicNewsDolpic5_3[] = { 0x000E0013, 0xFFFFFFFF };
 static u32 scDolpicNewsDolpic5_4[] = { 0x000E0012, 0x000E0013, 0xFFFFFFFF };
 static u32 scDolpicNewsDolpic6[]   = { 0x000E0002, 0x000E0004, 0xFFFFFFFF };
 static u32 scDolpicNewsDolpic7[]   = { 0x000E0005, 0x000E0006, 0xFFFFFFFF };
-static u32 scDolpicNewsDolpic8_1[] = { 0x000E0003, 0xFFFFFFFF };
-static u32 scDolpicNewsDolpic8_2[] = { 0x000E0007, 0x000E0003, 0xFFFFFFFF };
-static u32 scDolpicNewsDolpic8_3[] = { 0x000E0008, 0x000E0003, 0xFFFFFFFF };
-static u32 scDolpicNewsDolpic8_4[] = { 0x000E000E, 0x000E0003, 0xFFFFFFFF };
-static u32 scDolpicNewsDolpic8_5[] = { 0x000E000F, 0x000E0003, 0xFFFFFFFF };
-static u32 scDolpicNewsDolpic8_6[]
-    = { 0x000E000E, 0x000E000F, 0x000E0003, 0xFFFFFFFF };
-static u32 scDolpicNewsDolpic8_7[] = { 0x000E0010, 0x000E0003, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Aa1[] = { 0x000E0007, 0x000E000E, 0x000E0003, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Aa2[] = { 0x000E0007, 0x000E000E, 0x000E000F, 0x000E0003, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Aa3[] = { 0x000E0007, 0x000E000F, 0x000E0003, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Aa4[] = { 0x000E0007, 0x000E0003, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Ab1[] = { 0x000E0008, 0x000E000E, 0x000E0003, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Ab2[] = { 0x000E0008, 0x000E000E, 0x000E000F, 0x000E0003, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Ab3[] = { 0x000E0008, 0x000E000F, 0x000E0003, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Ab4[] = { 0x000E0008, 0x000E0003, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Ac1[] = { 0x000E000E, 0x000E0003, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Ac2[] = { 0x000E000E, 0x000E000F, 0x000E0003, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Ac3[] = { 0x000E000F, 0x000E0003, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Ba1[] = { 0x000E0007, 0x000E000E, 0x000E0003, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Ba2[] = { 0x000E0007, 0x000E000E, 0x000E000F, 0x000E0003, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Ba3[] = { 0x000E0007, 0x000E000F, 0x000E0003, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Ba4[] = { 0x000E0007, 0x000E0003, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Bb1[] = { 0x000E0008, 0x000E000E, 0x000E0003, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Bb2[] = { 0x000E0008, 0x000E000E, 0x000E000F, 0x000E0003, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Bb3[] = { 0x000E0008, 0x000E000F, 0x000E0003, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Bb4[] = { 0x000E0008, 0x000E0003, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Bc1[] = { 0x000E000E, 0x000E0003, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Bc2[] = { 0x000E000E, 0x000E000F, 0x000E0003, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Bc3[] = { 0x000E000F, 0x000E0003, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Bc4[] = { 0x000E0003, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Ca1[] = { 0x000E0007, 0x000E000E, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Ca2[] = { 0x000E0007, 0x000E000E, 0x000E000F, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Ca3[] = { 0x000E0007, 0x000E000F, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Ca4[] = { 0x000E0007, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Cb1[] = { 0x000E0008, 0x000E000E, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Cb2[] = { 0x000E0008, 0x000E000E, 0x000E000F, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Cb3[] = { 0x000E0008, 0x000E000F, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Cb4[] = { 0x000E0008, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Cc1[] = { 0x000E000E, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Cc2[] = { 0x000E000E, 0x000E000F, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Cc3[] = { 0x000E000F, 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Da1[] = { 0x000E0007, 0x000E000E, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Da2[] = { 0x000E0007, 0x000E000E, 0x000E000F, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Da3[] = { 0x000E0007, 0x000E000F, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Db1[] = { 0x000E0008, 0x000E000E, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Db2[] = { 0x000E0008, 0x000E000E, 0x000E000F, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Db3[] = { 0x000E0008, 0x000E000F, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Dc2[] = { 0x000E000E, 0x000E000F, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Ac4[] = { 0x000E0003, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Cc4[] = { 0x000E0010, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Da4[] = { 0x000E0007, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Db4[] = { 0x000E0008, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Dc1[] = { 0x000E000E, 0xFFFFFFFF };
+static u32 scDolpicNewsDolpic8_Dc3[] = { 0x000E000F, 0xFFFFFFFF };
 static u32 scDolpicNewsDolpic9[]   = { 0x000E000A, 0x000E000B, 0xFFFFFFFF };
 static u32 scDolpicNewsDolpic10[]  = { 0x000E000C, 0x000E000D, 0xFFFFFFFF };
 
@@ -1807,7 +1778,7 @@ void TGCConsole2::load(JSUMemoryInputStream& stream)
 	unk3B4->setFont(gpSystemFont);
 
 	unk3B4->show();
-	unk3D0 = new TMessageLoader("/common/2d/balloon.bmg");
+	unk3D0 = new TMessageLoader("/cmn2d/balloon.bmg");
 
 	unk3FC = new TExPane(unkB0, '\0b_0');
 	unk400 = new TBoundPane(unkB0, 'b_ba');
@@ -1855,7 +1826,7 @@ void TGCConsole2::load(JSUMemoryInputStream& stream)
 	unk528 = (J2DTextBox*)unkB0->search('tet2');
 	unk52C = (J2DTextBox*)unkB0->search('tet1');
 
-	unk530 = new TMessageLoader("/common/2d/infomess.bmg");
+	unk530 = new TMessageLoader("/cmn2d/infomess.bmg");
 	unk55C = 0;
 	SMSMakeTextBuffer(unk528, 0x401);
 	SMSMakeTextBuffer(unk52C, 0x401);
@@ -2140,18 +2111,8 @@ void TGCConsole2::endCameraDemo()
 
 	unk50 = 0;
 
-	if (!unk2F8->isInterpolatorAtZero() && !unk45
-	    && !TFlagManager::smInstance->getBool(0x30002)) {
-		unk45 = 1;
-		unk59 = 1;
-		unk7C = 0;
-		unk2F8->getPane()->show();
-		unk2F8->setPaneOffset(unk98, 0, 0, 0, 465 - unk2F8->mInitialBounds.y1);
-		unk26C->setPanePosition(50, JUTPoint(0, 100), JUTPoint(0, -30),
-		                        JUTPoint(0, -30));
-		unk274->getPane()->hide();
-		unk29C->getPane()->hide();
-	}
+	if (!unk2F8->isInterpolatorAtZero())
+		startAppearTank();
 
 	unk40 = 1;
 	unk41 = 0;
@@ -2177,13 +2138,15 @@ void TGCConsole2::endCameraDemo()
 		startAppearCoin();
 }
 
+// TODO: figure out inlining without pragmas - the original perform() calls this
+// out-of-line, ours inlines it unless the definition is fenced like this.
+#pragma dont_inline on
 void TGCConsole2::startAppearTank()
 {
 	if (unk45 || TFlagManager::smInstance->getBool(0x30002)) {
 		return;
 	}
 
-	// TODO: needs register swapping
 	unk45 = 1;
 	unk59 = 1;
 	unk7C = 0;
@@ -2194,9 +2157,10 @@ void TGCConsole2::startAppearTank()
 	unk26C->setPanePosition(50, JUTPoint(0, 100), JUTPoint(0, -30),
 	                        JUTPoint(0, -30));
 
-	unk274->getPane()->show();
-	unk29C->getPane()->show();
+	unk274->getPane()->hide();
+	unk29C->getPane()->hide();
 }
+#pragma dont_inline off
 
 void TGCConsole2::startDisappearTank()
 {
@@ -2214,13 +2178,18 @@ void TGCConsole2::startDisappearTank()
 	unk274->setPanePosition(40, start, mid, end);
 	unk270->setPanePosition(40, start, mid, end);
 	unk26C->setPanePosition(40, start, mid, end);
+
+	if (gpMarioOriginal->mYoshi->mState != TYoshi::STATE_MOUNTED) {
+		unk324->hide();
+		for (int i = 0; i < 4; ++i)
+			unk314[i]->hide();
+	}
 }
 
 void TGCConsole2::startAppearCoin()
 {
-	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
-	char framePad_8_startAppearCoin[8];
-	(void)framePad_8_startAppearCoin;
+	volatile u8 stackPad[8];
+	(void)stackPad;
 	if (unk108->getPane()->isVisible()) {
 		return;
 	}
@@ -2242,6 +2211,174 @@ void TGCConsole2::startAppearCoin()
 	}
 
 	unk124->clearStatus(JPABaseEmitter::STATUS_STOP_EMIT);
+}
+
+void TGCConsole2::countShine()
+{
+	TFlagManager* flags = TFlagManager::smInstance;
+	int shines          = flags->getFlag(0x40000);
+	int blueCoinTotal   = flags->getFlag(0x40001);
+
+	if (unk8A == 0 && (int)unk64 != shines)
+		unk8A = 1;
+
+	if (unk8A == 0)
+		return;
+
+	if (unk8A > 0xFB) {
+		int spentBlueCoins = 0;
+		for (int flag = 0x46; flag < 0x56; ++flag) {
+			if (flags->getFlag(0x10000 + flag) != 0)
+				++spentBlueCoins;
+		}
+		for (int flag = 0x6C; flag <= 0x73; ++flag) {
+			if (flags->getFlag(0x10000 + flag) != 0)
+				++spentBlueCoins;
+		}
+
+		int target = blueCoinTotal - spentBlueCoins * 10;
+		if (unk170 != target) {
+			--unk170;
+			if (unk170 < 0) {
+				unk170 = 0;
+			} else if (SMSGetMSound()->gateCheck(0x405C)) {
+				MSoundSESystem::MSoundSE::startSoundSystemSE(0x405C, 0,
+				                                             nullptr, 0);
+			}
+			if (unk170 < 100) {
+				int tens = (int)((f32)unk170 * 0.1f);
+				setDigitPane(unk154[0], unkE0, tens);
+				int ones = unk170 % 10;
+				setDigitPane(unk154[1], unkE0, ones);
+				if (unk154[2]->getPane()->isVisible())
+					unk154[2]->getPane()->hide();
+			} else {
+				int hundreds = (int)((f32)unk170 * 0.01f);
+				setDigitPane(unk154[0], unkE0, hundreds);
+
+				int remainder
+				    = unk170 - (int)((f32)unk170 * 0.01f) * 100;
+				int tens = (int)((f32)remainder * 0.1f);
+				setDigitPane(unk154[1], unkE0, tens);
+				setDigitPane(unk154[2], unkE0, remainder % 10);
+				if (!unk154[2]->getPane()->isVisible())
+					unk154[2]->getPane()->show();
+			}
+		}
+	}
+
+	if (unk8A == 0xFC) {
+		int value = unk64;
+		JUTRect shineRect;
+		if (value < 100) {
+			if (unk134[2]->getPane()->isVisible())
+				unk134[2]->getPane()->hide();
+			if (value % 10 == 0)
+				setBlendDigit(unk134[0], unkE0, value / 10);
+			setBlendDigit(unk134[1], unkE0, value % 10);
+		} else {
+			int hundreds = value / 100;
+			if (value % 100 == 0) {
+				setBlendDigit(unk134[0], unkE0, hundreds);
+				unk134[0]->getPane()->show();
+			}
+
+			value -= hundreds * 100;
+			if (value % 10 == 0)
+				setBlendDigit(unk134[1], unkE0, value / 10);
+			unk134[2]->getPane()->show();
+			setBlendDigit(unk134[2], unkE0, value % 10);
+		}
+	} else if (unk8A == 0x106) {
+		if (shines > (int)unk64) {
+			++unk64;
+			unk8A = 0xFB;
+		}
+	} else if (!unk34 && !unk35) {
+		unk134[0]->update();
+		unk134[1]->update();
+		unk134[2]->update();
+	}
+
+	++unk8A;
+}
+
+void TGCConsole2::countBlueCoin()
+{
+	// TODO: match remains partial; retail keeps `hundreds` live in f31 across
+	// the first changeTexture() and runs one callee-saved register shorter
+	// (0x160 frame with individual saves instead of `stmw`).
+	if (TFlagManager::smInstance->getFlag(0x40001) != unk168) {
+		unk168++;
+		int count = 0;
+
+		for (int i = 0x46; i < 0x56; ++i) {
+			if (TFlagManager::smInstance->getFlag(0x10000 + i))
+				count++;
+		}
+		for (int i = 0x6c; i < 0x74; ++i) {
+			if (TFlagManager::smInstance->getFlag(0x10000 + i))
+				count++;
+		}
+
+		int display = unk168 - count * 10;
+		if (display < 0)
+			display = 0;
+
+		if (display < 100) {
+			int tens = (int)((f32)display * 0.1f);
+			((J2DPicture*)unk154[0]->getPane())
+			    ->changeTexture(unkE0[tens]->getTexInfo(), 0);
+			int ones = display % 10;
+			((J2DPicture*)unk154[1]->getPane())
+			    ->changeTexture(unkE0[ones]->getTexInfo(), 0);
+			J2DPane* hidePane = unk154[2]->getPane();
+			if (hidePane->isVisible())
+				hidePane->hide();
+		} else {
+			int hundreds = (int)((f32)display * 0.01f);
+			((J2DPicture*)unk154[0]->getPane())
+			    ->changeTexture(unkE0[hundreds]->getTexInfo(), 0);
+			int rem = display - hundreds * 100;
+			int tens = (int)((f32)rem * 0.1f);
+			((J2DPicture*)unk154[1]->getPane())
+			    ->changeTexture(unkE0[tens]->getTexInfo(), 0);
+			int ones = rem % 10;
+			((J2DPicture*)unk154[2]->getPane())
+			    ->changeTexture(unkE0[ones]->getTexInfo(), 0);
+			J2DPane* showPane = unk154[2]->getPane();
+			if (!showPane->isVisible())
+				showPane->show();
+		}
+
+		if (unk160->getPane()->isVisible()) {
+			JUTRect rect = unk154[1]->getPane()->getGlobalBounds();
+			JGeometry::TVec3<f32> pos;
+			pos.x = rect.x1 + 0.5f * (rect.x2 - rect.x1);
+			pos.y = rect.y1 + 0.5f * (rect.y2 - rect.y1);
+			pos.z = 0.0f;
+			gpEmitterManager4D2->createEmitter(pos, 0x1fc, 0, 0);
+
+			if (display % 10 == 0) {
+				rect = unk154[0]->getPane()->getGlobalBounds();
+				pos.x = rect.x1 + 0.5f * (rect.x2 - rect.x1);
+				pos.y = rect.y1 + 0.5f * (rect.y2 - rect.y1);
+				pos.z = 0.0f;
+				gpEmitterManager4D2->createEmitter(pos, 0x1fc, 0, 0);
+			}
+		} else {
+			startAppearStar();
+		}
+
+		unk170 = display;
+		unk16C = 1;
+	}
+
+	if (unk16C != 0) {
+		unk16C++;
+		if (unk16C > 0x190)
+			unk16C = 0;
+	}
 }
 
 void TGCConsole2::startDisappearCoin()
@@ -2532,9 +2669,8 @@ void TGCConsole2::startAppearJetBalloon(int nozzleKind, int count)
 
 void TGCConsole2::startInsertJetBalloon()
 {
-	// Frame-padding: target frame is 16 bytes larger (MWCC stack-padding quirk).
-	char framePad_16_startInsertJetBalloon[16];
-	(void)framePad_16_startInsertJetBalloon;
+	volatile u8 stackPad[16];
+	(void)stackPad;
 	unk3D = 1;
 	unk59 = 1;
 
@@ -2558,9 +2694,8 @@ void TGCConsole2::startInsertJetBalloon()
 
 void TGCConsole2::startAppearRedCoin()
 {
-	// Frame-padding: target frame is 16 bytes larger (MWCC stack-padding quirk).
-	char framePad_16_startAppearRedCoin[16];
-	(void)framePad_16_startAppearRedCoin;
+	volatile u8 stackPad[16];
+	(void)stackPad;
 	unk3C = 1;
 	unk59 = 1;
 
@@ -2681,7 +2816,7 @@ bool TGCConsole2::startAppearBalloon(u32 messageID, bool autoClose)
 	unk3F8 = autoClose;
 	unk3E4 = (s32)(strlen((const char*)messageText) * unk3EC + unk3E8);
 
-	if (unk3E0 == 0x000E002F)
+	if (unk3E0 == 0x2C)
 		unk3E4 = 0x96;
 
 	if (unk3E4 <= 0)
@@ -3092,7 +3227,10 @@ bool TGCConsole2::processAppearStar(int param_1)
 	for (int i = 0; i < 3; ++i) {
 		if (param_1 == i * 6 + 28) {
 			if (i == 2) {
-				if ((!unk50 && shines >= 100) || (unk50 && shines > 100))
+				bool showHundreds = shines >= 100;
+				if (unk50 && !(gpMarDirector->mDemoFlags & 0x10))
+					showHundreds = shines > 100;
+				if (showHundreds)
 					unk134[i]->getPane()->show();
 			} else {
 				unk134[i]->getPane()->show();
@@ -3345,6 +3483,191 @@ bool TGCConsole2::processDrawTelop(u32)
 	return isFinished;
 }
 
+u32* TGCConsole2::checkDolpic8()
+{
+	TFlagManager* flags = TFlagManager::smInstance;
+	int group;
+	if (flags->getBool(0x103AA)) {
+		if (flags->getBool(0x50004)) {
+			if (flags->getBool(0x103AD))
+				group = 3;
+			else
+				group = 2;
+		} else {
+			group = 0;
+		}
+	} else if (flags->getBool(0x50004)) {
+		if (flags->getBool(0x103AD))
+			group = 0;
+		else
+			group = 1;
+	} else {
+		group = 0;
+	}
+
+	int event = flags->getFlag(0x60003);
+	int area;
+	switch (event) {
+	case 1:
+		area = flags->getFlag(0x1038F) != 0 ? 2 : 0;
+		break;
+	case 2:
+		area = flags->getNozzleRight(1, 1) ? 2 : 1;
+		break;
+	case 3:
+		area = flags->getNozzleRight(1, 0) ? 2 : 1;
+		break;
+	default:
+		area = 2;
+		break;
+	}
+
+	int variant;
+	if (event == 0 && flags->getFlag(0x1038F) != 0
+	    && flags->getFlag(0x60003) == 0) {
+		if (flags->getNozzleRight(1, 0))
+			variant = 1;
+		else if (flags->getNozzleRight(1, 1))
+			variant = 1;
+		else
+			variant = 0;
+	} else if (flags->getFlag(0x60003) == 0
+	           && (flags->getNozzleRight(1, 0)
+	               || flags->getNozzleRight(1, 1))) {
+		variant = 2;
+	} else {
+		variant = 3;
+	}
+
+	// Keep each sequence in its own row so pointer identity matches the
+	// distinct PAL sequences, even where their text content is identical.
+	static u32 lists[4][3][4][6] = {
+	    { // A
+	      {{0x000E0007, 0x000E000E, 0x000E0003, 0xFFFFFFFF},
+	       {0x000E0007, 0x000E000E, 0x000E000F, 0x000E0003, 0xFFFFFFFF},
+	       {0x000E0007, 0x000E000F, 0x000E0003, 0xFFFFFFFF},
+	       {0x000E0007, 0x000E0003, 0xFFFFFFFF}},
+	      {{0x000E0008, 0x000E000E, 0x000E0003, 0xFFFFFFFF},
+	       {0x000E0008, 0x000E000E, 0x000E000F, 0x000E0003, 0xFFFFFFFF},
+	       {0x000E0008, 0x000E000F, 0x000E0003, 0xFFFFFFFF},
+	       {0x000E0008, 0x000E0003, 0xFFFFFFFF}},
+	      {{0x000E000E, 0x000E0003, 0xFFFFFFFF},
+	       {0x000E000E, 0x000E000F, 0x000E0003, 0xFFFFFFFF},
+	       {0x000E000F, 0x000E0003, 0xFFFFFFFF},
+	       {0x000E0003, 0xFFFFFFFF}}},
+	    { // B
+	      {{0x000E0007, 0x000E000E, 0x000E0003, 0x000E0010, 0xFFFFFFFF},
+	       {0x000E0007, 0x000E000E, 0x000E000F, 0x000E0003, 0x000E0010, 0xFFFFFFFF},
+	       {0x000E0007, 0x000E000F, 0x000E0003, 0x000E0010, 0xFFFFFFFF},
+	       {0x000E0007, 0x000E0003, 0x000E0010, 0xFFFFFFFF}},
+	      {{0x000E0008, 0x000E000E, 0x000E0003, 0x000E0010, 0xFFFFFFFF},
+	       {0x000E0008, 0x000E000E, 0x000E000F, 0x000E0003, 0x000E0010, 0xFFFFFFFF},
+	       {0x000E0008, 0x000E000F, 0x000E0003, 0x000E0010, 0xFFFFFFFF},
+	       {0x000E0008, 0x000E0003, 0x000E0010, 0xFFFFFFFF}},
+	      {{0x000E000E, 0x000E0003, 0x000E0010, 0xFFFFFFFF},
+	       {0x000E000E, 0x000E000F, 0x000E0003, 0x000E0010, 0xFFFFFFFF},
+	       {0x000E000F, 0x000E0003, 0x000E0010, 0xFFFFFFFF},
+	       {0x000E0003, 0x000E0010, 0xFFFFFFFF}}},
+	    { // C
+	      {{0x000E0007, 0x000E000E, 0x000E0010, 0xFFFFFFFF},
+	       {0x000E0007, 0x000E000E, 0x000E000F, 0x000E0010, 0xFFFFFFFF},
+	       {0x000E0007, 0x000E000F, 0x000E0010, 0xFFFFFFFF},
+	       {0x000E0007, 0x000E0010, 0xFFFFFFFF}},
+	      {{0x000E0008, 0x000E000E, 0x000E0010, 0xFFFFFFFF},
+	       {0x000E0008, 0x000E000E, 0x000E000F, 0x000E0010, 0xFFFFFFFF},
+	       {0x000E0008, 0x000E000F, 0x000E0010, 0xFFFFFFFF},
+	       {0x000E0008, 0x000E0010, 0xFFFFFFFF}},
+	      {{0x000E000E, 0x000E0010, 0xFFFFFFFF},
+	       {0x000E000E, 0x000E000F, 0x000E0010, 0xFFFFFFFF},
+	       {0x000E000F, 0x000E0010, 0xFFFFFFFF},
+	       {0x000E0010, 0xFFFFFFFF}}},
+	    { // D
+	      {{0x000E0007, 0x000E000E, 0xFFFFFFFF},
+	       {0x000E0007, 0x000E000E, 0x000E000F, 0xFFFFFFFF},
+	       {0x000E0007, 0x000E000F, 0xFFFFFFFF},
+	       {0x000E0007, 0xFFFFFFFF}},
+	      {{0x000E0008, 0x000E000E, 0xFFFFFFFF},
+	       {0x000E0008, 0x000E000E, 0x000E000F, 0xFFFFFFFF},
+	       {0x000E0008, 0x000E000F, 0xFFFFFFFF},
+	       {0x000E0008, 0xFFFFFFFF}},
+	      {{0x000E000E, 0xFFFFFFFF},
+	       {0x000E000E, 0x000E000F, 0xFFFFFFFF},
+	       {0x000E000F, 0xFFFFFFFF},
+	       {0xFFFFFFFF}}}
+	};
+
+	if (group == 0) {
+		if (area == 0) {
+			if (variant == 0) return lists[0][0][0];
+			if (variant == 1) return lists[0][0][1];
+			if (variant == 2) return lists[0][0][2];
+			if (variant == 3) return lists[0][0][3];
+		} else if (area == 1) {
+			if (variant == 0) return lists[0][1][0];
+			if (variant == 1) return lists[0][1][1];
+			if (variant == 2) return lists[0][1][2];
+			if (variant == 3) return lists[0][1][3];
+		} else if (area == 2) {
+			if (variant == 0) return lists[0][2][0];
+			if (variant == 1) return lists[0][2][1];
+			if (variant == 2) return lists[0][2][2];
+			if (variant == 3) return lists[0][2][3];
+		}
+	} else if (group == 1) {
+		if (area == 0) {
+			if (variant == 0) return lists[1][0][0];
+			if (variant == 1) return lists[1][0][1];
+			if (variant == 2) return lists[1][0][2];
+			if (variant == 3) return lists[1][0][3];
+		} else if (area == 1) {
+			if (variant == 0) return lists[1][1][0];
+			if (variant == 1) return lists[1][1][1];
+			if (variant == 2) return lists[1][1][2];
+			if (variant == 3) return lists[1][1][3];
+		} else if (area == 2) {
+			if (variant == 0) return lists[1][2][0];
+			if (variant == 1) return lists[1][2][1];
+			if (variant == 2) return lists[1][2][2];
+			if (variant == 3) return lists[1][2][3];
+		}
+	} else if (group == 2) {
+		if (area == 0) {
+			if (variant == 0) return lists[2][0][0];
+			if (variant == 1) return lists[2][0][1];
+			if (variant == 2) return lists[2][0][2];
+			if (variant == 3) return lists[2][0][3];
+		} else if (area == 1) {
+			if (variant == 0) return lists[2][1][0];
+			if (variant == 1) return lists[2][1][1];
+			if (variant == 2) return lists[2][1][2];
+			if (variant == 3) return lists[2][1][3];
+		} else if (area == 2) {
+			if (variant == 0) return lists[2][2][0];
+			if (variant == 1) return lists[2][2][1];
+			if (variant == 2) return lists[2][2][2];
+			if (variant == 3) return lists[2][2][3];
+		}
+	} else if (group == 3) {
+		if (area == 0) {
+			if (variant == 0) return lists[3][0][0];
+			if (variant == 1) return lists[3][0][1];
+			if (variant == 2) return lists[3][0][2];
+			if (variant == 3) return lists[3][0][3];
+		} else if (area == 1) {
+			if (variant == 0) return lists[3][1][0];
+			if (variant == 1) return lists[3][1][1];
+			if (variant == 2) return lists[3][1][2];
+			if (variant == 3) return lists[3][1][3];
+		} else if (area == 2) {
+			if (variant == 0) return lists[3][2][0];
+			if (variant == 1) return lists[3][2][1];
+			if (variant == 2) return lists[3][2][2];
+			if (variant == 3) return nullptr;
+		}
+	}
+	return nullptr;
+}
+
 void TGCConsole2::checkChangeTelopArray()
 {
 	u32* oldArray = unk570;
@@ -3385,42 +3708,9 @@ void TGCConsole2::checkChangeTelopArray()
 					unk570 = scDolpicNewsDolpic5_4;
 			}
 			break;
-		case 8: {
-			int eventState = TFlagManager::smInstance->getFlag(0x60003);
-			switch (eventState) {
-			case 0:
-				if (TFlagManager::smInstance->getBool(0x1038F)) {
-					if (TFlagManager::smInstance->getNozzleRight(1, 0)
-					    || TFlagManager::smInstance->getNozzleRight(1, 1))
-						unk570 = scDolpicNewsDolpic8_6;
-					else
-						unk570 = scDolpicNewsDolpic8_4;
-				} else {
-					if (TFlagManager::smInstance->getNozzleRight(1, 0)
-					    || TFlagManager::smInstance->getNozzleRight(1, 1))
-						unk570 = scDolpicNewsDolpic8_5;
-					else if (TFlagManager::smInstance->getFlag(0x40000) >= 20)
-						unk570 = scDolpicNewsDolpic8_7;
-					else
-						unk570 = scDolpicNewsDolpic8_1;
-				}
-				break;
-			case 1:
-				if (TFlagManager::smInstance->getBool(0x1038F))
-					unk570 = scDolpicNewsDolpic8_1;
-				else
-					unk570 = scDolpicNewsDolpic8_2;
-				break;
-			default:
-				if (TFlagManager::smInstance->getNozzleRight(1, 0)
-				    || TFlagManager::smInstance->getNozzleRight(1, 1))
-					unk570 = scDolpicNewsDolpic8_1;
-				else
-					unk570 = scDolpicNewsDolpic8_3;
-				break;
-			}
+		case 8:
+			unk570 = checkDolpic8();
 			break;
-		}
 		default:
 			unk570 = nullptr;
 			break;
@@ -3616,17 +3906,17 @@ bool TGCConsole2::processAppearBalloon()
 bool TGCConsole2::processDisappearBalloon()
 {
 	bool isFinished = false;
+	int height;
+	int nextHeight;
 
 	JUTRect bounds = unk3B0->getBounds();
-	int height     = bounds.getHeight();
+	height = bounds.getHeight();
 
-	JUTRect contents  = unk3B0->getContentsBounds();
-	int contentHeight = contents.getHeight();
-
-	if (contentHeight > 0) {
-		int nextHeight = height - unk3CC;
-		if (contentHeight - unk3CC < 0)
-			nextHeight += unk3CC - contentHeight;
+	JUTRect contents = unk3B0->getContentsBounds();
+	if (contents.getHeight() > 0) {
+		nextHeight = height - unk3CC;
+		if (contents.getHeight() - unk3CC < 0)
+			nextHeight += unk3CC - contents.getHeight();
 
 		unk3B0->resize(unk3BC.getWidth(), nextHeight);
 
@@ -3903,6 +4193,24 @@ void TGCConsole2::perform(u32 flags, JDrama::TGraphics* graphics)
 			if (unkB4 == 0) {
 				startAppearCoin();
 				startAppearMario(false);
+				s32 currentNozzle = gpMarioOriginal->mWaterGun->mCurrentNozzle;
+				if (currentNozzle == TWaterGun::Spray) {
+					unk274 = unk278[0];
+					unk288 = unk28C[0];
+				} else if (currentNozzle == TWaterGun::Rocket) {
+					unk274 = unk278[2];
+					unk288 = unk28C[2];
+				} else if (currentNozzle == TWaterGun::Hover) {
+					unk274 = unk278[1];
+					unk288 = unk28C[1];
+				} else if (currentNozzle == TWaterGun::Turbo) {
+					unk274 = unk278[3];
+					unk288 = unk28C[3];
+				} else if (currentNozzle == TWaterGun::Underwater) {
+					unk274 = unk278[1];
+					unk288 = unk28C[1];
+				}
+				unk310 = currentNozzle;
 				unkB0->search('ROOT')->mAlpha = 0;
 			} else {
 				unkB0->search('ROOT')->mAlpha = 0xff;
@@ -3914,21 +4222,19 @@ void TGCConsole2::perform(u32 flags, JDrama::TGraphics* graphics)
 		}
 
 		updateLifeMeterState(this);
-		updateStarHudAutoHide(this);
-		updateShineAppearState(this);
-
+		updateCounterState(this);
 		if (unk35) {
 			bool done = true;
-			if (!unk140->update())
-				done = false;
-			if (!unk160->update())
-				done = false;
-			if (!unk108->update())
-				done = false;
+			done &= unk108->update();
+			done &= unk140->update();
+			done &= unk160->update();
 
-			setEmitterToPaneCenter(unk124, unkCC->getPane());
-			setEmitterToPaneCenter(unk164, unk14C->getPane());
-			setEmitterToPaneCenter(unk144, unk12C->getPane());
+			JUTRect bounds(unkCC->getPane()->mGlobalBounds);
+			setEmitterToPaneCenter(unk124, bounds);
+			bounds = unk14C->getPane()->mGlobalBounds;
+			setEmitterToPaneCenter(unk164, bounds);
+			bounds = unk12C->getPane()->mGlobalBounds;
+			setEmitterToPaneCenter(unk144, bounds);
 
 			if (done) {
 				unk140->getPane()->hide();
@@ -3939,14 +4245,11 @@ void TGCConsole2::perform(u32 flags, JDrama::TGraphics* graphics)
 			}
 		}
 
-		updateWaterGaugeFill(this);
-		updateCounterState(this);
-		updateJetAppearState(this);
+		countBlueCoin();
+		countShine();
+		updateShineAppearState(this);
 
-		updateRedCoinCounter(this);
-		updateRedCoinAppearState(this);
-		updateTimerAppearState(this);
-		updateTelopState(this, flags);
+		updateWaterGaugeFill(this);
 
 		if (!unk46 && SMS_CheckMarioFlag(0x10000) && !unk45 && !unk50)
 			startAppearTank();
@@ -3967,6 +4270,26 @@ void TGCConsole2::perform(u32 flags, JDrama::TGraphics* graphics)
 		updateMarioAppearState(this);
 
 		updateMarioLifeCounter(this);
+
+		if (unk3B && unk3A8->update()) {
+			unk3B = 0;
+			unk3A8->getPane()->hide();
+		}
+
+		updateTelopState(this, flags);
+
+		updateJetAppearState(this);
+
+		updateRedCoinCounter(this);
+		updateRedCoinAppearState(this);
+
+		if (unk58 && unk428->update())
+			unk58 = 0;
+
+		updateTimerAppearState(this);
+
+		if (unk3F && unk44C->update())
+			unk3F = 0;
 
 		if (!unk3F && unk4A)
 			setTimer(-1);

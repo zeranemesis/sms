@@ -17,7 +17,7 @@ BOOL TMario::startJumpWall()
 {
 	if (mWallPlane != NULL) {
 		const JGeometry::TVec3<f32>& normal = mWallPlane->getNormal();
-		s16 angle = matan(mWallPlane->mMinY, normal.x) + 0x8000;
+		s16 angle = matan(normal.z, normal.x) + 0x8000;
 		emitParticle(PARTICLE_MS_WALLKICK_A, angle);
 		emitParticle(PARTICLE_MS_WALLKICK_B, angle);
 	}
@@ -41,7 +41,7 @@ void TMario::doJumping()
 
 		if (mStatus == MARIO_STATUS_ROCKET
 		    && checkFlag(MARIO_STATUS_FLAG_UNK8000)) {
-			if (mWaterGun->canSpray())
+			if (mWaterGun->isEmitting())
 				mag = 2.5f * mIntendedMag;
 		}
 
@@ -84,10 +84,6 @@ void TMario::doJumping()
 		setAttackHeight(mDeParams.mPushupHeight.get());
 	}
 }
-
-void TMario::checkJumpingThrowStart() { }
-
-void TMario::askStrongGroundTouch() { }
 
 BOOL TMario::jumpingBasic(int statusOnGround, int animation, int processArg)
 {
@@ -356,7 +352,7 @@ BOOL TMario::backJumping()
 
 BOOL TMario::landing()
 {
-	if (mVel.y < 0.0f) {
+	if (mVel.y < 0.0f && mStatusArg < 3) {
 		if (mStatusTimer++ > 240) {
 			mStatusTimer = 240;
 			startSoundActor(MSD_SE_MV10B_CRY_JUMP_01);
@@ -510,8 +506,6 @@ BOOL TMario::jumpDownCommon(int param_1, int animation, float velocity)
 	}
 	return result;
 }
-
-void TMario::checkWallJumping() { }
 
 BOOL TMario::jumpShortBackDown()
 {
@@ -877,6 +871,7 @@ BOOL TMario::boardJumping()
 		if (mWallPlane == nullptr) {
 			setPlayerVelocity(0.0f);
 			loserExec();
+			gpMSound->startSoundSystemSE(MSD_SE_SY_DAMAGE, 0, nullptr, 0);
 		} else {
 			s16 diff
 			    = matan(mWallPlane->getNormal().z, mWallPlane->getNormal().x)
@@ -885,6 +880,7 @@ BOOL TMario::boardJumping()
 			if ((diff < -max || max < diff)
 			    && mForwardVel > mSurfingParamsWaterRed.mClashSpeed.get()) {
 				loserExec();
+				gpMSound->startSoundSystemSE(MSD_SE_SY_DAMAGE, 0, nullptr, 0);
 			} else {
 				setPlayerVelocity(0.0f);
 			}
@@ -909,7 +905,7 @@ BOOL TMario::rocketCheck()
 		if (!isUpperState(UPPER_STATE_PUMPING))
 			bVar2 = false;
 
-		if (!mWaterGun->canSpray())
+		if (!mWaterGun->isEmitting())
 			bVar2 = false;
 	} else {
 		bVar2 = false;
@@ -933,7 +929,7 @@ BOOL TMario::rocketing()
 			return changePlayerStatus(MARIO_STATUS_ROCKET_LANDING, 0, 0);
 	}
 
-	if (!isUpperState(UPPER_STATE_PUMPING) || !mWaterGun->canSpray())
+	if (!isUpperState(UPPER_STATE_PUMPING) || !mWaterGun->isEmitting())
 		return changePlayerStatus(MARIO_STATUS_ROCKET_LANDING, 0, 0);
 
 	if (mInput & 1) {

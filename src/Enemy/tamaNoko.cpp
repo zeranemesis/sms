@@ -190,7 +190,7 @@ void TTamaNokoManager::initSetEnemies()
 	for (int i = 0; i < mObjNum; ++i) {
 		TTamaNoko* enemy = (TTamaNoko*)unk18[i];
 		enemy->unk19C
-		    = new TTamaNokoFlower(enemy, 0, modelData, 0x3, "TamaNokoFlower");
+		    = new TTamaNokoFlower(enemy, 0, modelData, 0x3, "タマノコフラワー");
 	}
 }
 
@@ -621,7 +621,7 @@ void TTamaNoko::setDeadAnm() { setBckAnm(3); }
 
 BOOL TTamaNoko::isReachedToGoal() const
 {
-	JGeometry::TVec3<f32> pos = unk104.getPoint();
+	JGeometry::TVec3<f32> pos = getUnk104().getPoint();
 	pos -= mPosition;
 	pos.y = 0.0f;
 	if (pos.x == 0.0f && pos.z == 0.0f)
@@ -859,7 +859,7 @@ DEFINE_NERVE(TNerveTamaNokoThrown, TLiveActor)
 		f32 fVar4 = params->mSLThrownVY.get();
 
 		self->setVelocity(
-		    JGeometry::TVec3<f32>(fVar3 * fVar2 * c, fVar4, fVar3 * fVar2 * s));
+		    JGeometry::TVec3<f32>(fVar3 * fVar2 * s, fVar4, fVar3 * fVar2 * c));
 
 		self->mPosition.y += 2.0f;
 

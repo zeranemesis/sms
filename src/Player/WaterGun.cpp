@@ -1484,9 +1484,18 @@ void TWaterGun::changeNozzle(TNozzleType nozzleType, bool animate)
 
 void TWaterGun::movement()
 {
-	if (!canSpray()) {
+	if (mCurrentWater == 0) {
 		unk1CC2 = 0;
 		unk1CC4 = 0;
+	} else {
+		u8 directorMode = gpMarDirector->unk124;
+		if (directorMode == 3 || directorMode == 4 || (directorMode != 1 && directorMode != 2)) {
+			unk1CC2 = 0;
+			unk1CC4 = 0;
+		} else if (!canSpray()) {
+			unk1CC2 = 0;
+			unk1CC4 = 0;
+		}
 	}
 
 	unk1CC8 += (unk1CC2 - unk1CC8) * mWatergunParams.mChangeSpeed.get();
@@ -1678,6 +1687,35 @@ TNozzleBase* TWaterGun::getCurrentNozzle() const
 	return mNozzleList[mCurrentNozzle];
 }
 
+bool TWaterGun::isEmitting()
+{
+	const TWaterGun* self = this;
+
+	if (mCurrentWater == 0)
+		return false;
+
+	u8 gameState = gpMarDirector->unk124;
+	if (gameState == 3 || gameState == 4)
+		return false;
+	bool isStateOneOrTwo = true;
+	if (gameState != 1 && gameState != 2)
+		isStateOneOrTwo = false;
+	if (isStateOneOrTwo)
+		return false;
+
+	if (self->getCurrentNozzle()->getNozzleKind() == 1) {
+		TNozzleTrigger* trig = (TNozzleTrigger*)self->getCurrentNozzle();
+		if (trig->unk385 == TNozzleTrigger::ACTIVE)
+			return true;
+		return false;
+	}
+
+	if (self->getCurrentNozzle()->unk378 > 0.0f)
+		return true;
+
+	return false;
+}
+
 void TWaterGun::setAmountToRate(f32 rate)
 {
 	// Frame-padding: target frame is 24 bytes larger (MWCC stack-padding quirk).
@@ -1772,8 +1810,8 @@ void TWaterGun::rotateProp(f32 rotation)
 	if (mCurrentNozzle == 5) {
 		unk1CD2 += rotation * mWatergunParams.mNozzleAngleYSpeed.get();
 		unk1CD2 *= mWatergunParams.mNozzleAngleYBrake.get();
-		if (mWatergunParams.mHoverRotMax.get() < unk1CD2) {
-			unk1CD2 = mWatergunParams.mHoverRotMax.get();
+		if (mWatergunParams.mNozzleAngleYSpeedMax.get() < unk1CD2) {
+			unk1CD2 = mWatergunParams.mNozzleAngleYSpeedMax.get();
 		}
 		unk1CD0 = unk1CD0 + unk1CD2;
 	} else {
@@ -1915,10 +1953,7 @@ BOOL TWaterGun::damage()
 
 void TWaterGun::changeBackup()
 {
-	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
-	char framePad_8_changeBackup[8];
-	(void)framePad_8_changeBackup;
-	// TODO: Missing stack space
+	// TODO: Missing stack space (original has 8 extra bytes for alignment)
 	// volatile u32 unused2[5];
 	if (mSwitchToSecondNozzleProgress == 0.0f) {
 		SMSGetMSound()->startSoundSystemSE(MSD_SE_SY_SELECT_POMP_BACK, 0,

@@ -58,8 +58,6 @@ public:
 		return THitActor::receiveMessage(sender, message);
 	}
 
-	void generate(JGeometry::TVec3<f32>&);
-
 public:
 	/* 0x68 */ TSharedParts* mSharedParts;
 	/* 0x6C */ bool mActive;
@@ -103,7 +101,6 @@ public:
 	virtual void setMActorAndKeeper();
 
 	void deadEffect();
-	void setRecoverTears();
 	void setBubble();
 
 public:
@@ -117,7 +114,10 @@ public:
 
 class TOilBall : public TBEelTears {
 public:
-	TOilBall(const char* name = "油ダマ");
+	TOilBall(const char* name = "油ダマ")
+	    : TBEelTears(name)
+	{
+	}
 
 	virtual void load(JSUMemoryInputStream&);
 	virtual void calcRootMatrix();
@@ -189,8 +189,11 @@ public:
 	virtual void perform(u32 cue, JDrama::TGraphics* graphics);
 	virtual BOOL receiveMessage(THitActor* sender, u32 message);
 
-	void updateTremble();
 	void changeToothAlpha(u8);
+
+	// The link map lists updateTremble__13TBossEelToothFv as UNUSED at 0x4
+	// bytes, i.e. a single `blr`: the body was empty and always inlined away.
+	void updateTremble();
 
 public:
 	/* 0x068 */ TSharedParts* mSharedParts;
@@ -339,7 +342,7 @@ public:
 	static bool mToothDamageAnm;
 	static f32 mTestAngY;
 
-	TBossEel(const char* name = "㼀");
+	TBossEel(const char* name = "\u3F00");
 
 	virtual void perform(u32 cue, JDrama::TGraphics* graphics);
 	virtual BOOL receiveMessage(THitActor* sender, u32 message)
@@ -362,7 +365,6 @@ public:
 	void generateVortex();
 	void forceShedTears(bool);
 	void shedTears(MtxPtr);
-	BOOL isEyeBlurOn();
 	bool canEatMario();
 	void forceEat();
 	void updateTearsCnt();

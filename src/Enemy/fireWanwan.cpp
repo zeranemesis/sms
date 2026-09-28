@@ -1,3 +1,7 @@
+// rogue include: the original TU opens .rodata with this dummy string
+// pair, ahead of every other string constant in the object.
+#include <M3DUtil/InfectiousStrings.hpp>
+
 #include <Enemy/FireWanwan.hpp>
 #include <JSystem/JDrama/JDRNameRefGen.hpp>
 #include <System/MarDirector.hpp>
@@ -23,10 +27,8 @@
 #include <Camera/CameraShake.hpp>
 #include <Enemy/Graph.hpp>
 
-// rogue includes needed for matching sinit & bss
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
-#include <M3DUtil/InfectiousStrings.hpp>
 
 namespace {
 const GXColorS10 cBodyColorOnFire   = { 400, -50, -100, 0 };
@@ -332,7 +334,7 @@ void TFireWanwanManager::checkBalloonHelpBoss22()
 		f32 helpRange22 = getWanwanParams()->mBoss22HelpRange.get();
 		if (diff.squared() < helpRange22 * helpRange22) {
 			mBoss22BalloonWasShown = true;
-			gpMarDirector->getConsole()->startAppearBalloon(0xE0016, true);
+			gpMarDirector->getConsole()->startAppearBalloon(0x16, true);
 		}
 	}
 }
@@ -343,7 +345,7 @@ void TFireWanwanManager::checkBalloonHelpBoss23()
 	    && getWanwanParams()->mBoss23TimerMax.get() > unk64) {
 		if (++unk64 >= getWanwanParams()->mBoss23TimerMax.get()) {
 			unk64 = getWanwanParams()->mBoss23TimerMax.get();
-			gpMarDirector->getConsole()->startAppearBalloon(0xE0017, true);
+			gpMarDirector->getConsole()->startAppearBalloon(0x17, true);
 		}
 	}
 }
@@ -351,7 +353,7 @@ void TFireWanwanManager::checkBalloonHelpBoss23()
 void TFireWanwanManager::checkBalloonHelpBoss24()
 {
 	if (mWanwanRecoversBeforeHelpBalloon == 0) {
-		gpMarDirector->getConsole()->startAppearBalloon(0xE0018, true);
+		gpMarDirector->getConsole()->startAppearBalloon(0x18, true);
 		mWanwanRecoversBeforeHelpBalloon = -1;
 	}
 }
@@ -460,7 +462,7 @@ void TFireWanwanTailHit::behaveTaken(THitActor* param_1)
 
 	mCurTailLength  = unkA4->getLength();
 	mPrevTailLength = mCurTailLength;
-	moveRequest(mPosition);
+	moveRequest(param_1->mPosition);
 }
 
 void TFireWanwanTailHit::behaveApart()
@@ -593,7 +595,7 @@ void TFireWanwanTailHit::performNodes(u32 param_1, JDrama::TGraphics* param_2)
 		unkA8[i]->perform(param_1, param_2, local_68, local_74);
 	}
 
-	for (int i = 0; i < 5; ++i) {
+	for (int i = 0; i < 4; ++i) {
 		TPosition3f afStack_a4;
 		MTXCopy(afStack_a4, unkA8[i]->mMActor->getModel()->getBaseTRMtx());
 
@@ -666,7 +668,7 @@ BOOL TFireWanwanTailHit::moveRequest(const JGeometry::TVec3<f32>& param_1)
 	gpMap->isTouchedOneWallAndMoveXZ(&next.x, next.y, &next.z, 70.0f);
 	unkA4->unk0.back().mPos = next;
 	mPosition               = next;
-	unk74.translation(next);
+	unk74.translation(mPosition);
 	return true;
 }
 
@@ -1533,7 +1535,7 @@ void TFireWanwan::attackToMario()
 	const TNerveBase<TLiveActor>* nerve = mSpine->getLatestNerve();
 	if (nerve != &TNerveFireWanwanFly::theNerve()
 	    && nerve != &TNerveFireWanwanEscape::theNerve()
-	    && nerve != &TNerveFireWanwanRecover::theNerve()) {
+	    && nerve != &TNerveFireWanwanRecoverGraph::theNerve()) {
 		if (isFreeze()) {
 			(void)nerve;
 		} else {
@@ -1778,8 +1780,6 @@ bool TFireWanwan::behaveHitWallOnFlying(const TBGCheckData* check_data)
 	return false;
 }
 
-void TFireWanwan::calcShadowPos() { }
-
 void TFireWanwan::calcRipplePos()
 {
 	MtxPtr mtx = getModel()->getAnmMtx(mCenterJointIdx);
@@ -1996,7 +1996,7 @@ DEFINE_NERVE(TNerveFireWanwanDie, TLiveActor)
 		manager->mWanwanRecoversBeforeHelpBalloon = -1;
 
 		if (++manager->mWanwansKilled == manager->getActiveObjNum()) {
-			gpMarDirector->getConsole()->startAppearBalloon(0xE0019, true);
+			gpMarDirector->getConsole()->startAppearBalloon(0x19, true);
 		}
 
 		self->stopTriggerSound();

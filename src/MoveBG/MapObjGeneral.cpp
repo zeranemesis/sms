@@ -52,13 +52,13 @@ void TMapObjGeneral::waitingToAppear()
 
 	if (isActorType(0x4000005a)) {
 		f32 damageRadius = getDamageRadius();
-		if (SMS_GetMarioDamageRadius() + damageRadius + 100.0f
-		    > distToMario(mInitialPosition))
+		if (distToMario(mInitialPosition)
+		    > SMS_GetMarioDamageRadius() + damageRadius + 100.0f)
 			appear();
 	} else {
 		f32 damageRadius = getDamageRadius();
-		if (SMS_GetMarioDamageRadius() + damageRadius
-		    > distToMario(mInitialPosition))
+		if (distToMario(mInitialPosition)
+		    > SMS_GetMarioDamageRadius() + damageRadius)
 			appear();
 	}
 }
@@ -233,10 +233,10 @@ void TMapObjGeneral::appearing()
 		mScaling.x += mNormalAppearingScaleUp;
 		mScaling.y += mNormalAppearingScaleUp;
 		mScaling.z += mNormalAppearingScaleUp;
-		if (mScaling.x < mInitialScaling.x)
+		if (mScaling.x < getInitialScaling().x)
 			return;
 
-		mScaling.set(mInitialScaling);
+		mScaling.set(getInitialScaling());
 	}
 
 uuuh:

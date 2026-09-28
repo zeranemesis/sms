@@ -6,6 +6,8 @@
 #include <Map/MapData.hpp>
 #include <Camera/cameralib.hpp>
 
+template <> f32 CLBCalcRatio<s16>(s16, s16, s16);
+
 TCameraMarioData* gpCameraMario;
 
 TCameraMarioData::TCameraMarioData()
@@ -22,9 +24,8 @@ TCameraMarioData::TCameraMarioData()
 
 void TCameraMarioData::calcAndSetMarioData()
 {
-	// Frame-padding: target frame is 8 bytes larger (MWCC stack-padding quirk).
-	char framePad_8_calcAndSetMarioData[8];
-	(void)framePad_8_calcAndSetMarioData;
+	volatile u8 stackPad[8];
+	(void)stackPad;
 	int status = SMS_GetMarioStatus();
 	switch (status) {
 	case MARIO_STATUS_HANGING:
@@ -107,12 +108,6 @@ bool TCameraMarioData::isMarioLeanMirror() const
 	}
 	return result;
 }
-
-bool TCameraMarioData::isMarioBathtub() const { }
-
-bool TCameraMarioData::isMarioDoorDemoStart() const { }
-
-bool TCameraMarioData::isMarioDoorDemoEnd() const { }
 
 bool TCameraMarioData::isMarioClimb(u32 status) const
 {

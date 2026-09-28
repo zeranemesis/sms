@@ -1,3 +1,7 @@
+// rogue include: the original TU opens .rodata with this dummy string
+// pair, ahead of every other string constant in the object.
+#include <M3DUtil/InfectiousStrings.hpp>
+
 #include <Enemy/Amenbo.hpp>
 #include <JSystem/J3D/J3DGraphAnimator/J3DModel.hpp>
 #include <JSystem/JUtility/JUTNameTab.hpp>
@@ -13,9 +17,6 @@
 #include <Map/MapData.hpp>
 #include <Player/MarioAccess.hpp>
 #include <Player/ModelWaterManager.hpp>
-
-// rogue includes needed for matching sinit & bss
-#include <M3DUtil/InfectiousStrings.hpp>
 
 static const char* amenbo_bastable[] = {
 	nullptr, "/scene/amenbo/bas/amenbo_hit1_loop.bas",
@@ -96,9 +97,9 @@ void TAmenbo::bind()
 		return;
 
 	JGeometry::TVec3<f32> local_14 = mPosition;
+	local_14.y += mHeadHeight;
 	local_14 += mLinearVelocity;
 	local_14 += mVelocity;
-	local_14.y += mHeadHeight;
 
 	mVelocity.y -= getGravityY();
 
@@ -335,7 +336,7 @@ void TAmenbo::doAdjustTarget()
 	vel *= 0.9f;
 	mVelocity = vel;
 
-	unk1E0 = mMActor->getFrameCtrl(ANM_TYPE_BCK)->getFrame() / 63;
+	unk1E0 = mMActor->getFrameCtrl(ANM_TYPE_BCK)->getFrame() * (1.0f / 63.0f);
 
 	if (1.0f <= unk1E0)
 		unk1E0 = 1.0f;

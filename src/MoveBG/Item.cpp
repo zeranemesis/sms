@@ -4,6 +4,7 @@
 #include <Map/Map.hpp>
 #include <Map/MapData.hpp>
 #include <MSound/MSound.hpp>
+#include <MSound/MSoundBGM.hpp>
 #include <MSound/MSoundSE.hpp>
 #include <System/Application.hpp>
 #include <System/StageUtil.hpp>
@@ -338,13 +339,13 @@ void TFlowerCoin::load(JSUMemoryInputStream& stream)
 	stream >> unk158;
 }
 
-void TCoinEmpty::warning() { }
-
 void TCoinEmpty::appear() { }
 
 void TCoinEmpty::makeObjAppeared() { }
 
 void TCoinEmpty::kill() { }
+
+void TCoinEmpty::warning() { }
 
 TCoinEmpty::TCoinEmpty(const char* name)
     : TCoin(name)
@@ -411,7 +412,7 @@ void TCoinBlue::load(JSUMemoryInputStream& stream)
 	(void)framePad_8_load;
 	TCoin::load(stream);
 	if (TFlagManager::getInstance()->getBlueCoinFlag(
-	        gpMarDirector->getCurrentMap(), getEventId()))
+	        SMSGetMarDirector()->getCurrentMap(), getEventId()))
 		makeObjDead();
 }
 
@@ -761,6 +762,7 @@ void TShine::appearSimple(int param_1)
 
 	SMSGetMSound()->startSoundActor(MSD_SE_SHINE_APPEAR, &mPosition, 0, nullptr,
 	                                0, 4);
+	MSBgm::startBGM(MSD_BGM_KUPPA);
 
 	mStateTimer = unk174;
 	mState      = STATE_UNKB;
@@ -1298,11 +1300,11 @@ void TNozzleBox::touchPlayer(THitActor*)
 	    && !TFlagManager::smInstance->getNozzleRight(
 	        gpMarDirector->getCurrentMap(), 1)
 	    && !unk166) {
-		gpMarDirector->getConsole()->startAppearBalloon(0xE0057, true);
+		gpMarDirector->getConsole()->startAppearBalloon(0x5A, true);
 		unk166 = true;
 	}
 	if (!unk15C && !unk166) {
-		gpMarDirector->getConsole()->startAppearBalloon(0xE0056, true);
+		gpMarDirector->getConsole()->startAppearBalloon(0x59, true);
 		unk166 = true;
 	}
 }

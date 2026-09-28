@@ -9,9 +9,8 @@ f32 MSBgm::smMainVolume = 0.75f;
 
 void MSBgm::init()
 {
-	// Frame-padding hack: original frame 0x48, ours 0x28 (MWCC stack-padding bug).
-	char pad[32];
-	(void)pad;
+	volatile u8 stackPad[32];
+	(void)stackPad;
 	u16 count = MSGMSound->unk0->mSeTable.mSoundMax[16];
 	for (u32 i = 1; i < count; ++i)
 		new MSBgm(i);

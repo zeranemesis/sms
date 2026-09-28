@@ -1,3 +1,7 @@
+// rogue include: the original TU opens .rodata with this dummy string
+// pair, ahead of every other string constant in the object.
+#include <M3DUtil/InfectiousStrings.hpp>
+
 #include <Map/BathWaterManager.hpp>
 #include <JSystem/ResTIMG.hpp>
 #include <JSystem/JDrama/JDRNameRefGen.hpp>
@@ -24,10 +28,8 @@
 
 #include <MSound/MSound.hpp>
 
-// rogue includes needed for matching sinit & bss
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
-#include <M3DUtil/InfectiousStrings.hpp>
 
 // NOTE: the main tragedy of this file is that it looks like a bunch of classes
 // were defined right inside of the cpp file and all their methods were defined
@@ -1660,9 +1662,9 @@ void TBathWaterManager::loadAfter()
 {
 	TScreenTexture* tex = static_cast<TScreenTexture*>(
 	    JDrama::TNameRefGen::search("スクリーンテクスチャ"));
-	unk28[0] = new TBathWaterFlatRenderer(unk18);
-	unk28[1] = new TBathWaterMeshRenderer(unk18, tex->getTexture());
-	unk30    = unk28[1];
+	unk28[0] = unk28[1]
+	    = new TBathWaterMeshRenderer(unk18, tex->getTexture());
+	unk30 = unk28[1];
 }
 
 void TBathWaterManager::wave(JGeometry::TVec3<f32>&, JGeometry::TVec3<f32>&,

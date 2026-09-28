@@ -153,11 +153,6 @@ void TWaterHitHideObj::load(JSUMemoryInputStream& stream)
 	THideObjBase::load(stream);
 }
 
-TWaterHitHideObj::TWaterHitHideObj(const char* name)
-    : THideObjBase(name)
-{
-}
-
 void TFruitHitHideObj::touchFruit(THitActor* param_1)
 {
 	if (mHiddenObj != nullptr) {
@@ -178,11 +173,6 @@ void TFruitHitHideObj::touchActor(THitActor* param_1)
 void TFruitHitHideObj::load(JSUMemoryInputStream& stream)
 {
 	THideObjBase::load(stream);
-}
-
-TFruitHitHideObj::TFruitHitHideObj(const char* name)
-    : THideObjBase(name)
-{
 }
 
 void TFruitBasket::countFruit(THitActor* param_1)
@@ -242,12 +232,6 @@ void TFruitBasket::loadAfter()
 	}
 }
 
-TFruitBasket::TFruitBasket(const char* name)
-    : TFruitHitHideObj(name)
-    , unk150(0)
-{
-}
-
 void TFruitBasketEvent::countFruit(THitActor* fruit)
 {
 	TFruitBasket::countFruit(fruit);
@@ -298,11 +282,6 @@ void THipDropHideObj::touchPlayer(THitActor* param_1)
 		appearObj(0.0f);
 		makeObjDead();
 	}
-}
-
-THipDropHideObj::THipDropHideObj(const char* name)
-    : THideObjBase(name)
-{
 }
 
 void TWaterHitPictureHideObj::afterFinishedAnim()

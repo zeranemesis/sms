@@ -85,19 +85,28 @@ public:
 	void touchActor(THitActor*);
 	void kill();
 	void load(JSUMemoryInputStream&);
-	TBalloonKoopaJr(const char* name = "風船（クッパＪｒ）");
+	TBalloonKoopaJr(const char* name = "風船（クッパＪｒ）")
+	    : TMapObjGeneral(name)
+	{
+	}
 };
 
 class TPinnaEntrance : public TMapObjBase {
 public:
 	void loadAfter();
-	TPinnaEntrance(const char* name = "ピンナ入り口");
+	TPinnaEntrance(const char* name = "ピンナ入り口")
+	    : TMapObjBase(name)
+	{
+	}
 };
 
 class TWaterRecoverObj : public TMapObjBase {
 public:
 	void touchPlayer(THitActor*);
-	TWaterRecoverObj(const char* name = "水回復オブジェ");
+	TWaterRecoverObj(const char* name = "水回復オブジェ")
+	    : TMapObjBase(name)
+	{
+	}
 };
 
 class TAmiKing : public TMapObjBase {
@@ -109,14 +118,24 @@ public:
 	void calcRootMatrix();
 	void bind();
 	void touchPlayer(THitActor*);
-	TAmiKing(const char* name = "アミキング");
+	TAmiKing(const char* name = "アミキング")
+	    : TMapObjBase(name)
+	{
+	}
 };
 
 class TPinnaCoaster : public TMapObjBase {
 public:
-	void control();
-	void initMapObj();
+	virtual void control();
+	virtual void initMapObj();
 	TPinnaCoaster(const char* name = "コースター");
+
+public:
+	/* 0x138 */ int unk138;
+	/* 0x13C */ char unk13C[4]; // TODO: padding or unknown field
+	/* 0x148 */ f32 unk148;
+	/* 0x144 */ f32 unk144;
+	/* 0x140 */ f32 unk140;
 };
 
 class TMerryPole : public TMapObjBase {

@@ -13,7 +13,6 @@
 #include <JSystem/JKernel/JKRDvdFile.hpp>
 #include <JSystem/JKernel/JKRDvdRipper.hpp>
 #include <System/Resolution.hpp>
-#include <dolphin/vi.h>
 #include <System/EventWatcher.hpp>
 #include <System/EmitterViewObj.hpp>
 #include <System/RenderModeObj.hpp>

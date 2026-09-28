@@ -454,10 +454,24 @@ static void evGetPollutionLevel(TSpcTypedInterp<TEventWatcher>* interp,
 
 static void evSetEventStart(TSpcTypedInterp<TEventWatcher>* interp, u32 arg_num)
 {
+	interp->verifyArgNum(1, &arg_num);
+	TMapEvent* event = (TMapEvent*)interp->pop().getDataInt();
+	if (event) {
+		event->startControl();
+		event->unk18 = 2;
+		event->unk1C = nullptr;
+		u32 dummy = event->unk18;
+		(void)dummy;
+	}
+	interp->push();
 }
 
 static void evSetEventEnd(TSpcTypedInterp<TEventWatcher>* interp, u32 arg_num)
 {
+	interp->verifyArgNum(1, &arg_num);
+	TMapEvent* event = (TMapEvent*)interp->pop().getDataInt();
+	event->finishControl();
+	interp->push();
 }
 
 static void evSetNextStage(TSpcTypedInterp<TEventWatcher>* interp, u32 arg_num)
@@ -847,7 +861,7 @@ static void evCheckWoodBox(TSpcTypedInterp<TEventWatcher>* interp, u32 arg_num)
 	int p1 = interp->pop().getDataInt();
 	int p2 = interp->pop().getDataInt();
 
-	int count = p2 - p1 + 1;
+	int count = p1 - p2 + 1;
 
 	char buffer[] = "ゲーム木箱00";
 	for (int i = p2; i <= p1; ++i) {

@@ -111,7 +111,12 @@ bool TMario::isRunningInWater()
 	return false;
 }
 
-void TMario::getRunningInWaterBrake() { }
+f32 TMario::getRunningInWaterBrake()
+{
+	return 1.0f
+	       - ((mFloorPosition.z - mPosition.y) / mRunParams.mSwimDepth.get())
+	             * (1.0f - mRunParams.mInWaterBrake.get());
+}
 
 BOOL TMario::doRunningAnimation()
 {
@@ -217,7 +222,7 @@ void TMario::getSlopeNormalAccele(f32* arg0, f32* arg1)
 	}
 
 	if (mGroundPlane->isWetGround()) {
-		if (mGroundPlane->mNormal.y > 0.99f) {
+		if (mGroundPlane->getNormal().y > 0.99f) {
 			*arg0 = mSlipParamsWaterGround.mSlopeAcceleUp.get();
 			*arg1 = mSlipParamsWaterGround.mSlopeAcceleDown.get();
 		} else {
@@ -255,7 +260,7 @@ void TMario::getSlopeSlideAccele(f32* arg0, f32* arg1)
 	}
 
 	if (mGroundPlane->isWetGround()) {
-		if (mGroundPlane->mNormal.y > 0.99f) {
+		if (mGroundPlane->getNormal().y > 0.99f) {
 			*arg0 = mSlipParamsWaterGround.mSlideAcceleUp.get();
 			*arg1 = mSlipParamsWaterGround.mSlideAcceleDown.get();
 		} else {
@@ -282,7 +287,7 @@ f32 TMario::getChangeAngleSpeed()
 		} else if (mGroundPlane->isUnk2()) {
 			angSp = (f32)mSlipParams45.mSlideAngleYSp.get();
 		} else if (mGroundPlane->isWetGround()) {
-			if (mGroundPlane->mNormal.y > 0.99f) {
+			if (mGroundPlane->getNormal().y > 0.99f) {
 				angSp = (f32)mSlipParamsWaterGround.mSlideAngleYSp.get();
 			} else {
 				angSp = (f32)mSlipParamsWaterSlope.mSlideAngleYSp.get();
@@ -336,14 +341,13 @@ void TMario::slideProcess(f32 baseAcc, f32 friction)
 	f32 slopeUp;
 	f32 slopeDown;
 	getSlopeSlideAccele(&slopeUp, &slopeDown);
-	f32 acc;
 	if (angDiff > -0x4000 && angDiff < 0x4000)
-		acc = slopeUp * mag + baseAcc;
+		baseAcc += slopeUp * mag;
 	else
-		acc = slopeDown * mag + baseAcc;
+		baseAcc += slopeDown * mag;
 
-	mSlideVelX += acc * JMASSin(dirAng);
-	mSlideVelZ += acc * JMASCos(dirAng);
+	mSlideVelX += baseAcc * JMASSin(dirAng);
+	mSlideVelZ += baseAcc * JMASCos(dirAng);
 	mSlideVelX *= friction;
 	mSlideVelZ *= friction;
 	unk9E = matan(mSlideVelZ, mSlideVelX);
@@ -404,7 +408,7 @@ BOOL TMario::doSliding(f32 stopThreshold)
 	} else if (mGroundPlane->isUnk2()) {
 		slipFr = mSlipParams45.mSlipFriction.get();
 	} else if (mGroundPlane->isWetGround()) {
-		if (mGroundPlane->mNormal.y > 0.99f)
+		if (mGroundPlane->getNormal().y > 0.99f)
 			slipFr = mSlipParamsWaterGround.mSlipFriction.get();
 		else
 			slipFr = mSlipParamsWaterSlope.mSlipFriction.get();
@@ -420,13 +424,13 @@ BOOL TMario::doSliding(f32 stopThreshold)
 		}
 	}
 
-	f32 mult   = (0.02f * (mIntendedMag * 0.03125f * cs)) + slipFr;
+	f32 mult   = (0.02f * (mIntendedMag / 32.0f * cs)) + slipFr;
 	f32 oldMag = MsSqrtf(mSlideVelX * mSlideVelX + mSlideVelZ * mSlideVelZ);
 
 	mSlideVelX
-	    += sn * (mSlideVelZ * (mIntendedMag * 0.03125f)) * getSlideStickMult();
+	    += sn * (mSlideVelZ * (mIntendedMag / 32.0f)) * getSlideStickMult();
 	mSlideVelZ = -(
-	    (sn * (mSlideVelX * (mIntendedMag * 0.03125f)) * getSlideStickMult())
+	    (sn * (mSlideVelX * (mIntendedMag / 32.0f)) * getSlideStickMult())
 	    - mSlideVelZ);
 
 	f32 newMag = MsSqrtf(mSlideVelX * mSlideVelX + mSlideVelZ * mSlideVelZ);
@@ -477,13 +481,22 @@ void TMario::slopeProcess()
 
 void TMario::doSlipping(f32) { }
 
-void TMario::doStopping() { }
+BOOL TMario::doStopping()
+{
+	BOOL zeroed = false;
+	f32 v       = FConverge(mForwardVel, 0.0f, 1.0f, 1.0f);
+	mForwardVel = v;
+	if (v == 0.0f)
+		zeroed = true;
+
+	setPlayerVelocity(mForwardVel);
+	return zeroed;
+}
 
 void TMario::doRunning()
 {
-	f32 sp = mIntendedMag < mRunParams.mMaxSpeed.get()
-	             ? mRunParams.mMaxSpeed.get()
-	             : mIntendedMag;
+	f32 maxSp = mRunParams.mMaxSpeed.get();
+	f32 sp    = mIntendedMag < maxSp ? mIntendedMag : maxSp;
 
 	if (onYoshi())
 		sp *= mYoshiParams.mRunYoshiMult.get();
@@ -493,7 +506,7 @@ void TMario::doRunning()
 	} else if (mForwardVel <= sp) {
 		mForwardVel += mRunParams.mAddBase.get()
 		               - mForwardVel * mRunParams.mAddVelDiv.get();
-	} else if (mGroundPlane->mNormal.y >= mRunParams.mDecStartNrmY.get()) {
+	} else if (mGroundPlane->getNormal().y >= mRunParams.mDecStartNrmY.get()) {
 		mForwardVel -= mRunParams.mDecBrake.get();
 		mForwardVel -= mYoshiParams.mDecBrake.get();
 	}
@@ -520,14 +533,10 @@ void TMario::doRunning()
 		rotSp = (s16)((f32)rotSp * mYoshiParams.mRotYoshiMult.get());
 
 	if (checkFlag(MARIO_FLAG_FLUDD_EMITTING))
-		rotSp = mDeParams.mRunningRotSpMin.get();
+		rotSp = mRunParams.mDashRotSp.get();
 
-	if (isRunningInWater()) {
-		mForwardVel *= -(
-		    (((mFloorPosition.z - mPosition.y) / mRunParams.mSwimDepth.get())
-		     * (1.0f - mRunParams.mInWaterBrake.get()))
-		    - 1.0f);
-	}
+	if (isRunningInWater())
+		mForwardVel *= getRunningInWaterBrake();
 
 	mFaceAngle.y
 	    = mIntendedYaw
@@ -597,7 +606,7 @@ void TMario::doSurfing()
 		else
 			accel = getSurfingParamsGround()->mAccel.get();
 		mForwardVel += 1.1f - (mForwardVel / accel);
-	} else if (mGroundPlane->mNormal.y >= 0.95f) {
+	} else if (mGroundPlane->getNormal().y >= 0.95f) {
 		mForwardVel -= 1.0f;
 	}
 
@@ -664,7 +673,7 @@ BOOL TMario::running()
 			return changePlayerStatus(0xC400209, 0, false);
 		}
 		if (mStatusTimer > 0xF0 && mForwardVel >= 16.0f
-		    && mGroundPlane->mNormal.y <= 0.17364818f) {
+		    && mGroundPlane->getNormal().y >= 0.17364818f) {
 			return changePlayerStatus(MARIO_STATUS_BRAKE, 0, false);
 		}
 		return changePlayerStatus(MARIO_STATUS_WALK_END, 0, false);
@@ -689,7 +698,7 @@ BOOL TMario::running()
 			return changePlayerStatus(0xC400209, 0, false);
 		}
 		if (mStatusTimer > 0xF0 && mForwardVel >= 16.0f
-		    && mGroundPlane->mNormal.y <= 0.17364818f) {
+		    && mGroundPlane->getNormal().y >= 0.17364818f) {
 			return changePlayerStatus(MARIO_STATUS_BRAKE, 0, false);
 		}
 		return changePlayerStatus(MARIO_STATUS_WALK_END, 0, false);
@@ -806,7 +815,7 @@ BOOL TMario::rotating()
 	if (mStatus == MARIO_STATUS_ROTATE_L)
 		mModelFaceAngle = mStatusTimer * 4096;
 	else
-		mModelFaceAngle = -(mStatusTimer * 4096);
+		mModelFaceAngle = mStatusTimer * -4096;
 
 	return 0;
 }
@@ -971,7 +980,7 @@ BOOL TMario::surfing()
 		s16 maxAngle;
 		f32 minSpeed;
 
-		if (mWallPlane->isWaterSurface()) {
+		if (mGroundPlane->isWaterSurface()) {
 			maxAngle = getSurfingParamsWater()->mClashAngle.get();
 			minSpeed = getSurfingParamsWater()->mClashSpeed.get();
 		} else {
@@ -985,6 +994,7 @@ BOOL TMario::surfing()
 			BOOL ret = changePlayerStatus(MARIO_STATUS_JUMP_BACK_DOWN, 0, true);
 			mForwardVel = 0.8f * -mForwardVel;
 			mVel.y      = 50.0f;
+			gpMSound->startSoundSystemSE(MSD_SE_SY_DAMAGE, 0, nullptr, 0);
 			return ret;
 		}
 		setPlayerVelocity(0.0f);
@@ -1024,16 +1034,7 @@ BOOL TMario::walkEnd()
 	if (considerRotateStart())
 		return true;
 
-	// TODO: inline
-	BOOL zeroed = false;
-	f32 v       = FConverge(mForwardVel, 0.0f, 1.0f, 1.0f);
-	mForwardVel = v;
-	if (v == 0.0f)
-		zeroed = true;
-
-	setPlayerVelocity(mForwardVel);
-
-	if (zeroed)
+	if (doStopping())
 		return changePlayerStatus(MARIO_STATUS_WAIT, 0, false);
 
 	switch (walkProcess()) {
@@ -1045,7 +1046,7 @@ BOOL TMario::walkEnd()
 		break;
 	}
 
-	f32 rate = 0.25f * mForwardVel;
+	f32 rate = mForwardVel / 4.0f;
 	if (rate < 0.1f)
 		rate = 0.1f;
 	setAnimation(ANIM_RUN1, rate);
@@ -1209,7 +1210,7 @@ BOOL TMario::catching()
 	(void)0;
 
 	if (!(mInput & 0x8) && (mInput & 0x2)) {
-		if (mForwardVel > mDeParams.mClashSpeed.get())
+		if (mForwardVel > mJumpParams.mRotBroadEnableV.get())
 			return changePlayerStatus(MARIO_STATUS_ROTATE_BROAD_JUMP, 0, false);
 
 		return changePlayerStatus(MARIO_STATUS_CATCH_STOP, 0, false);

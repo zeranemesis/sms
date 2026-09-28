@@ -1,4 +1,10 @@
 #include <Player/MarioCap.hpp>
+
+
+// rogue include: the original TU opens .rodata with the dummy string
+// pair from System/DummyStrings.hpp; without it every string offset in
+// this object is shifted.
+#include <System/DummyStrings.hpp>
 #include <JSystem/JKernel/JKRFileLoader.hpp>
 #include <JSystem/J3D/J3DGraphLoader/J3DModelLoader.hpp>
 #include <JSystem/J3D/J3DGraphBase/J3DTexture.hpp>
@@ -118,9 +124,6 @@ void TMarioCap::createMirrorCap()
 		unk28[i]->init(unk10[i], 4);
 	}
 }
-
-// UNUSED
-void TMarioCap::addDirty() { }
 
 void TMarioCap::perform(u32 cue, JDrama::TGraphics* graphics)
 {

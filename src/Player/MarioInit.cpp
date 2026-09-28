@@ -415,7 +415,11 @@ void TMario::initValues()
 	unk468 = 0.0f;
 	unk46C = 0.0f;
 
+#ifdef VERSION_GMSP01
+	mAnmSound = new MAnmSoundMario(SMSGetMSound());
+#else
 	mAnmSound = new MAnmSound(SMSGetMSound());
+#endif
 	mAnmSound->initAnmSound(nullptr, 1, 0.0f);
 
 	unk4EC          = 0;
@@ -461,7 +465,7 @@ void TMario::setGamePad(TMarioGamePad* pad) { mGamePad = pad; }
 
 TMario::TDeParams::TDeParams()
     : TParams("/Mario/Mario.prm")
-    , PARAM_INIT(mHpMax, 8)
+    , mHpMax(this, 8, JDrama::TNameRef::calcKeyCode("mHPMax"), "mHPMax")
     , PARAM_INIT(mRunningMax, 45.0f)
     , PARAM_INIT(mDashMax, 60.0f)
     , PARAM_INIT(mDashAcc, 0.5f)
@@ -938,7 +942,7 @@ TMario::TEParams::TEParams(const char* prm)
     , PARAM_INIT(mMotor, 0)
     , PARAM_INIT(mMinSpeed, 0.0f)
     , PARAM_INIT(mDirty, 0.0f)
-    , PARAM_INIT(mInvincibleTime, 0)
+    , PARAM_INIT(mInvincibleTime, 300)
 {
 	TParams::load(mPrmPath);
 }
