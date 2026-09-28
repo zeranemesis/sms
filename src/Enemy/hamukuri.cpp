@@ -382,6 +382,7 @@ void THaneHamuKuriManager::createAnmData() { TObjManager::createAnmData(); }
 
 TDoroHaneKuriManager::TDoroHaneKuriManager(const char* name)
     : THaneHamuKuriManager(name)
+    , unk74(nullptr)
 {
 }
 
@@ -1898,7 +1899,7 @@ void TDangoHamuKuri::swingBody()
 		if (mAttackSw) {
 			if (mPrev != nullptr) {
 				if (mPrev == mBoss) {
-					mPosition = mBoss->mPosition;
+					mRotation = mBoss->mRotation;
 					unk210 += 10.0f;
 				}
 
@@ -1919,6 +1920,7 @@ void TDangoHamuKuri::swingBody()
 
 TBossDangoHamuKuri::TBossDangoHamuKuri(const char* name)
     : TDangoHamuKuri(name)
+    , unk238(0)
 {
 }
 
@@ -2406,7 +2408,7 @@ DEFINE_NERVE(TNerveHamuKuriBoundFreeze, TLiveActor)
 		self->unk1E4.x              = thing.x;
 		self->unk1E4.y              = thing.y;
 		self->unk1E4.z              = thing.z;
-		self->setGoalPathMario();
+		self->setGoalPath(TPathNode((THitActor*)gpMarioAddress));
 		self->unk1E0 = 1;
 	}
 
@@ -2561,7 +2563,7 @@ DEFINE_NERVE(TNerveHaneHamuKuriUpWait, TLiveActor)
 	THaneHamuKuri* self = (THaneHamuKuri*)spine->getBody();
 	if (spine->getTime() < 1) {
 		self->setWaitAnm();
-		self->setGoalPathMario();
+		self->setGoalPath(TPathNode((THitActor*)gpMarioAddress));
 	}
 
 	self->mScaling.x = self->mScaling.z
@@ -2587,7 +2589,7 @@ DEFINE_NERVE(TNerveHaneHamuKuriMoveOnGraph, TLiveActor)
 		self->setWalkAnm();
 		self->initialGraphNode();
 		if (self->getTracer()->getGraph()->getNodeNum() == 1)
-			self->setGoalPathMario();
+			self->setGoalPath(TPathNode((THitActor*)gpMarioAddress));
 	}
 
 	if (self->getTracer()->getGraph()->getNodeNum() == 1) {

@@ -58,21 +58,18 @@ TRoulette::TRoulette(const char* name)
     , unk144(0.2f)
     , unk150(nullptr)
 {
-	// Frame-padding: target frame is 16 bytes larger (MWCC stack-padding quirk).
-	char framePad_16_TRoulette[16];
-	(void)framePad_16_TRoulette;
-	unk148 = 0;
-	unk14A = 0;
-	unk14C = 0;
-	unk14E = 255;
-	if (gpApplication.mCurrArea.getStage() == 14
+	unk148.r = 0;
+	unk148.g = 0;
+	unk148.b = 0;
+	unk148.a = 255;
+	if (SMSGetApplication()->mCurrArea.getStage() == 14
 	    && gpMarDirector->getCurrentStage() == 1) {
-		unk141 = 1;
-		unk14C = 255;
+		unk141   = 1;
+		unk148.b = 255;
 	}
-	if (gpApplication.mCurrArea.getStage() == 56) {
-		unk14C = 255;
-		unk142 = 1;
+	if (SMSGetApplication()->mCurrArea.getStage() == 56) {
+		unk148.b = 255;
+		unk142   = 1;
 	}
 }
 
@@ -84,20 +81,19 @@ void TRoulette::initMapObj()
 		if (strstr(getModel()->getModelData()->getMaterialName()->getName(i),
 		           "_switch")
 		    != nullptr) {
-			SMS_InitPacket_OneTevColor(mMActor->getModel(), i, GX_TEVREG0,
-			                           (GXColorS10*)&unk148);
+			SMS_InitPacket_OneTevColor(getMActor()->getModel(), i, GX_TEVREG0,
+			                           &unk148);
 		}
 	}
 
 	unk150 = new TRouletteSw(this, "ルーレットスイッチ");
 
-	static_cast<TIdxGroupObj*>(
-	    JDrama::TNameRefGen::search("オブジェクトグループ"))
-	    ->getChildren()
-	    .push_back(unk150);
+	TIdxGroupObj* objGroup = static_cast<TIdxGroupObj*>(
+	    JDrama::TNameRefGen::search("オブジェクトグループ"));
+	objGroup->getChildren().push_back(unk150);
 	f32 attackR = 500.0f;
 	f32 attackH = 100.0f;
-	if (gpApplication.mCurrArea.unk0 == 14) {
+	if (SMSGetApplication()->mCurrArea.getStage() == 14) {
 		attackR = 40.0f;
 		attackH = 80.0f;
 	}
@@ -141,9 +137,9 @@ void TRoulette::calcRootMatrix()
 void TRoulette::setRollSp(f32 sp)
 {
 	unk13C        = sp;
-	unk148        = 0;
-	unk14A        = 0;
-	unk14C        = 255;
+	unk148.r      = 0;
+	unk148.g      = 0;
+	unk148.b      = 255;
 	unk150->unk6C = 0;
 }
 
@@ -157,17 +153,17 @@ void TRoulette::switchStop()
 		    && unk13C != 0.0f) {
 			unk150->unk6C = 0;
 			unk13C        = 0.0f;
-			unk148        = 0;
-			unk14A        = 0;
-			unk14C        = 0;
+			unk148.r      = 0;
+			unk148.g      = 0;
+			unk148.b      = 0;
 			SMSGetMSound()->startSoundActor(MSD_SE_BS_TELESA_RLT_STOP,
 			                                &mPosition, 0, nullptr, 0, 4);
 		}
 		if (unk150->unk6C != 0 && unk141 != 0) {
 			unk150->unk6C = 0;
-			unk148        = 0;
-			unk14A        = 0;
-			unk14C        = 0;
+			unk148.r      = 0;
+			unk148.g      = 0;
+			unk148.b      = 0;
 			SMSGetMSound()->startSoundActor(MSD_SE_BS_TELESA_RLT_STOP,
 			                                &mPosition, 0, nullptr, 0, 4);
 			unk140 = 1;
@@ -838,7 +834,7 @@ void TDonchou::loadAfter()
 	char framePad_8_loadAfter[8];
 	(void)framePad_8_loadAfter;
 	TMapObjBase::loadAfter();
-	if (gpApplication.mCurrArea.getStage() == 14
+	if (SMSGetApplication()->mCurrArea.getStage() == 14
 	    && gpMarDirector->getCurrentStage() == 0) {
 		unk144
 		    = static_cast<TSlotDrum*>(JDrama::TNameRefGen::search("srotdram"));

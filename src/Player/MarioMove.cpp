@@ -91,7 +91,8 @@ bool TMario::isInvincible() const
 bool TMario::isWallInFront() const
 {
 	if (mWallPlane != nullptr) {
-		s16 diff = getWallAngle() - mFaceAngle.y;
+		s16 wallAngle = getWallAngle();
+		s16 diff      = wallAngle - mFaceAngle.y;
 		if (diff < -0x71C7 || diff > 0x71C7)
 			return true;
 	}
@@ -2000,7 +2001,7 @@ void TMario::thinkSituation()
 		if (mAnimationId != ANIM_THROWN)
 			startSoundActor(MSD_SE_MV10B_CRY_JUMP_01);
 		gpCamera->unk64 |= CPolarSubCamera::CAMERA_FLAG_HELL_DEAD_DEMO;
-		gpMarDirector->unk4E |= 0x8;
+		gpMarDirector->onDemoFlag(TMarDirector::DEMO_FLAG_HELL_DEAD);
 		return;
 	}
 
